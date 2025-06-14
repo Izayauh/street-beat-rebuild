@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,11 +17,11 @@ const Header = () => {
 
   const handleBookStudio = () => {
     if (user) {
-      // TODO: Navigate to booking page when created
-      console.log('Navigate to booking page');
+      toast.success("Booking page coming soon! Stay tuned.");
     } else {
       navigate('/auth');
     }
+    setIsMenuOpen(false);
   };
 
   const handleAuthClick = () => {

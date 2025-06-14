@@ -1,5 +1,9 @@
-
 import { Mic, Headphones, Volume2, Music, User, Zap } from 'lucide-react';
+
+interface ServicesProps {
+  onGetQuote: () => void;
+  onScheduleConsultation: () => void;
+}
 
 const services = [
   {
@@ -40,7 +44,7 @@ const services = [
   },
 ];
 
-const Services = () => {
+const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
   return (
     <section id="services" className="py-20 bg-gray-900">
       <div className="container mx-auto px-4">
@@ -85,7 +89,10 @@ const Services = () => {
                 </ul>
 
                 {/* CTA Button */}
-                <button className="w-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white py-3 rounded-lg hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-500/50 transition-all duration-300 font-semibold">
+                <button
+                  className="w-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white py-3 rounded-lg hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-500/50 transition-all duration-300 font-semibold"
+                  onClick={onGetQuote}
+                >
                   Get Quote
                 </button>
               </div>
@@ -100,7 +107,10 @@ const Services = () => {
             <p className="text-gray-300 mb-6">
               Let's discuss your project and find the perfect solution for your music.
             </p>
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+            <button
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+              onClick={onScheduleConsultation}
+            >
               Schedule Consultation
             </button>
           </div>

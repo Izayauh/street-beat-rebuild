@@ -1,7 +1,10 @@
-
 import { Play, ArrowRight } from 'lucide-react';
 
-const Hero = () => {
+interface HeroProps {
+  onBookStudioTime: () => void;
+}
+
+const Hero = ({ onBookStudioTime }: HeroProps) => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Background Pattern */}
@@ -34,15 +37,22 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button className="group bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25">
+            <button
+              className="group bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
+              onClick={onBookStudioTime}
+            >
               Book Studio Time
               <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            
-            <button className="group flex items-center space-x-2 text-white border border-white/30 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300">
+            <a
+              href="https://soundcloud.com" // Replace with your actual portfolio/music
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center space-x-2 text-white border border-white/30 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+            >
               <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
               <span>Listen to Our Work</span>
-            </button>
+            </a>
           </div>
 
           {/* Stats */}
