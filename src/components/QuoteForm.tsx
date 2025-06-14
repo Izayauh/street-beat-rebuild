@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,19 +136,35 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
       record.email = email.trim();
     }
 
-    const { error } = await supabase.from("quotes").insert([record]);
+    const { data, error } = await supabase.from("quotes").insert([record]).select();
+
+    if (error) {
+      setSubmitting(false);
+      toast.error("Failed to submit quote. Please try again.");
+      return;
+    }
+
+    // Send quote email
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-quote-email', {
+        body: { quoteId: data[0].id }
+      });
+      
+      if (emailError) {
+        console.warn('Failed to send quote email:', emailError);
+        // Don't fail the whole process if email fails
+      }
+    } catch (emailError) {
+      console.warn('Error sending quote email:', emailError);
+    }
 
     setSubmitting(false);
-    if (error) {
-      toast.error("Failed to submit quote. Please try again.");
-    } else {
-      setShowSuccess(true);
-      toast.success("Quote request submitted! Our team will contact you soon.");
-      setTimeout(() => {
-        setShowSuccess(false);
-        onSuccess();
-      }, 2000);
-    }
+    setShowSuccess(true);
+    toast.success("Quote request submitted! Check your email for details.");
+    setTimeout(() => {
+      setShowSuccess(false);
+      onSuccess();
+    }, 2000);
   };
 
   if (showSuccess) {

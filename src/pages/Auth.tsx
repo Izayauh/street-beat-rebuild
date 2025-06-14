@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { useCustomAuth } from '@/hooks/useCustomAuth';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -16,7 +17,8 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  const { signUp, signIn, user } = useAuth();
+  const { signIn, user } = useAuth();
+  const { signUpWithVerification } = useCustomAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -32,7 +34,7 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUpWithVerification(email, password, fullName);
         if (error) {
           toast({
             title: "Sign up failed",
@@ -42,7 +44,7 @@ const Auth = () => {
         } else {
           toast({
             title: "Check your email",
-            description: "We've sent you a confirmation link.",
+            description: "We've sent you a confirmation link with next steps.",
           });
         }
       } else {
