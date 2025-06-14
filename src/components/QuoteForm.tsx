@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,60 +112,79 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     // Validate email for guests
     if (!user) {
       const emailErr = validateEmail(email);
       setEmailError(emailErr);
       if (emailErr) return;
     }
+    
     setSubmitting(true);
 
-    // Compose data
-    let record: {
-      user_id?: string | null;
-      email?: string;
-      answers: Answers;
-    } = {
-      answers,
-    };
-
-    if (user) {
-      record.user_id = user.id;
-      record.email = user.email ?? undefined;
-    } else {
-      record.user_id = null;
-      record.email = email.trim();
-    }
-
-    const { data, error } = await supabase.from("quotes").insert([record]).select();
-
-    if (error) {
-      setSubmitting(false);
-      toast.error("Failed to submit quote. Please try again.");
-      return;
-    }
-
-    // Send quote email
     try {
-      const { error: emailError } = await supabase.functions.invoke('send-quote-email', {
-        body: { quoteId: data[0].id }
-      });
-      
-      if (emailError) {
-        console.warn('Failed to send quote email:', emailError);
-        // Don't fail the whole process if email fails
-      }
-    } catch (emailError) {
-      console.warn('Error sending quote email:', emailError);
-    }
+      // Compose data
+      let record: {
+        user_id?: string | null;
+        email?: string;
+        answers: Answers;
+      } = {
+        answers,
+      };
 
-    setSubmitting(false);
-    setShowSuccess(true);
-    toast.success("Quote request submitted! Check your email for details.");
-    setTimeout(() => {
-      setShowSuccess(false);
-      onSuccess();
-    }, 2000);
+      if (user) {
+        record.user_id = user.id;
+        record.email = user.email ?? undefined;
+      } else {
+        record.user_id = null;
+        record.email = email.trim();
+      }
+
+      console.log('Submitting quote with data:', record);
+
+      // Save quote to database
+      const { data, error } = await supabase.from("quotes").insert([record]).select();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw new Error("Failed to save quote to database");
+      }
+
+      console.log('Quote saved successfully:', data[0]);
+
+      // Try to send quote email, but don't fail if it doesn't work
+      try {
+        console.log('Attempting to send quote email...');
+        const { error: emailError } = await supabase.functions.invoke('send-quote-email', {
+          body: { quoteId: data[0].id }
+        });
+        
+        if (emailError) {
+          console.warn('Failed to send quote email:', emailError);
+          // Don't throw - just log the warning
+        } else {
+          console.log('Quote email sent successfully');
+        }
+      } catch (emailError) {
+        console.warn('Error invoking quote email function:', emailError);
+        // Don't throw - just log the warning
+      }
+
+      // Show success regardless of email status
+      setSubmitting(false);
+      setShowSuccess(true);
+      toast.success("Quote request submitted successfully! We'll get back to you soon.");
+      
+      setTimeout(() => {
+        setShowSuccess(false);
+        onSuccess();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Quote submission error:', error);
+      setSubmitting(false);
+      toast.error(error.message || "Failed to submit quote. Please try again.");
+    }
   };
 
   if (showSuccess) {
