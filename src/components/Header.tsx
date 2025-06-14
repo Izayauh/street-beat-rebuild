@@ -1,9 +1,33 @@
 
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
+
+  const handleBookStudio = () => {
+    if (user) {
+      // TODO: Navigate to booking page when created
+      console.log('Navigate to booking page');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleAuthClick = () => {
+    navigate('/auth');
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800">
@@ -22,9 +46,43 @@ const Header = () => {
             <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
             <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
             <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
-              Book Studio Time
-            </button>
+            
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-300">Welcome, {user.user_metadata?.full_name || user.email}</span>
+                <Button
+                  onClick={handleBookStudio}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                >
+                  Book Studio Time
+                </Button>
+                <Button
+                  onClick={handleSignOut}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-300 hover:text-white"
+                >
+                  <LogOut size={16} />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Button
+                  onClick={handleAuthClick}
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white"
+                >
+                  <User size={16} className="mr-2" />
+                  Sign In
+                </Button>
+                <Button
+                  onClick={handleBookStudio}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                >
+                  Book Studio Time
+                </Button>
+              </div>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -43,9 +101,45 @@ const Header = () => {
               <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
               <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
               <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
-              <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-fit">
-                Book Studio Time
-              </button>
+              
+              {user ? (
+                <>
+                  <span className="text-gray-300 py-2 border-t border-gray-800">
+                    Welcome, {user.user_metadata?.full_name || user.email}
+                  </span>
+                  <Button
+                    onClick={handleBookStudio}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-fit"
+                  >
+                    Book Studio Time
+                  </Button>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white w-fit"
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleAuthClick}
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white w-fit"
+                  >
+                    <User size={16} className="mr-2" />
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={handleBookStudio}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-fit"
+                  >
+                    Book Studio Time
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         )}
