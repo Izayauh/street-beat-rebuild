@@ -1,4 +1,6 @@
 import { Mic, Headphones, Volume2, Music, User, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import QuoteDialog from './QuoteDialog';
 
 interface ServicesProps {
   onGetQuote: () => void;
@@ -45,8 +47,11 @@ const services = [
 ];
 
 const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
+  const [quoteOpen, setQuoteOpen] = useState(false);
+
   return (
     <section id="services" className="py-20 bg-gray-900">
+      <QuoteDialog open={quoteOpen} onOpenChange={setQuoteOpen} />
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -91,7 +96,8 @@ const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
                 {/* CTA Button */}
                 <button
                   className="w-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white py-3 rounded-lg hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-500/50 transition-all duration-300 font-semibold"
-                  onClick={onGetQuote}
+                  onClick={() => setQuoteOpen(true)}
+                  type="button"
                 >
                   Get Quote
                 </button>
@@ -110,6 +116,7 @@ const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
             <button
               className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
               onClick={onScheduleConsultation}
+              type="button"
             >
               Schedule Consultation
             </button>

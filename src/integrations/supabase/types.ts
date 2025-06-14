@@ -33,6 +33,38 @@ export type Database = {
         }
         Relationships: []
       }
+      quotes: {
+        Row: {
+          answers: Json
+          created_at: string
+          email: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
