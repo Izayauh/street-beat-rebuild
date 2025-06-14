@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 import { sendEmail } from "../_shared/email-utils.ts";
@@ -17,12 +16,24 @@ interface QuoteEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Quote email function called');
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { quoteId }: QuoteEmailRequest = await req.json();
+    const body = await req.json();
+    console.log('Request body:', body);
+    
+    const { quoteId }: QuoteEmailRequest = body;
+
+    if (!quoteId) {
+      console.error('No quoteId provided');
+      throw new Error('Quote ID is required');
+    }
+
+    console.log('Fetching quote with ID:', quoteId);
 
     // Fetch quote data
     const { data: quote, error } = await supabase
@@ -31,9 +42,17 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', quoteId)
       .single();
 
-    if (error || !quote) {
+    if (error) {
+      console.error('Database error:', error);
+      throw new Error('Quote not found: ' + error.message);
+    }
+
+    if (!quote) {
+      console.error('Quote not found in database');
       throw new Error('Quote not found');
     }
+
+    console.log('Quote found:', { id: quote.id, email: quote.email });
 
     const answers = quote.answers as any;
     const service = answers.service || 'Music Production';
@@ -172,6 +191,8 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    console.log('Attempting to send email to:', quote.email);
+
     const success = await sendEmail({
       to: quote.email,
       subject: `Your ${service} Quote from 3rd Street Music`,
@@ -179,7 +200,10 @@ const handler = async (req: Request): Promise<Response> => {
       from: `3rd Street Music <${Deno.env.get('SMTP_USER')}>`
     });
 
+    console.log('Email send result:', success);
+
     if (success) {
+      console.log('Email sent successfully');
       return new Response(
         JSON.stringify({ message: "Quote email sent successfully" }),
         {
@@ -188,10 +212,12 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     } else {
+      console.error('Email sending failed');
       throw new Error("Failed to send email");
     }
   } catch (error: any) {
-    console.error("Error sending quote email:", error);
+    console.error("Error in send-quote-email function:", error);
+    console.error("Error stack:", error.stack);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
