@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -85,7 +85,7 @@ const Contact = () => {
             <div>
               <h3 className="text-2xl font-bold text-white mb-6">Get In Touch</h3>
               <p className="text-gray-400 mb-8 leading-relaxed">
-                Whether you're an emerging artist or an established musician, we're here to help bring your musical vision to life. Reach out and let's start the conversation.
+                Connecting Hamilton and Beyond to music. Whether you're an emerging artist or an established musician, we're here to help bring your musical vision to life.
               </p>
             </div>
 
@@ -97,7 +97,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <div className="text-white font-semibold">Call Us</div>
-                  <div className="text-gray-400">(555) 123-4567</div>
+                  <div className="text-gray-400">(513) 737-1900</div>
                 </div>
               </div>
 
@@ -107,7 +107,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <div className="text-white font-semibold">Email Us</div>
-                  <div className="text-gray-400">info@3rdstreetmusic.com</div>
+                  <div className="text-gray-400">miles@3rdstreetmusic.com</div>
                 </div>
               </div>
 
@@ -117,7 +117,17 @@ const Contact = () => {
                 </div>
                 <div>
                   <div className="text-white font-semibold">Visit Us</div>
-                  <div className="text-gray-400">123 Music Row, Nashville, TN</div>
+                  <div className="text-gray-400">230 N 3rd Street<br />Hamilton, OH 45011</div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold">Website</div>
+                  <div className="text-gray-400">3rdStreetMusic.com</div>
                 </div>
               </div>
             </div>

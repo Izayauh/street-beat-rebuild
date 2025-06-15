@@ -1,5 +1,5 @@
 
-import { Instagram, Twitter, Youtube, Facebook } from 'lucide-react';
+import { Instagram, Facebook, Globe } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -15,21 +15,32 @@ const Footer = () => {
               <span className="text-white font-bold text-xl">3rd Street Music</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
-              Professional music production, mixing, and mastering services. 
-              Helping artists bring their musical vision to life with industry-standard quality.
+              Connecting Hamilton and Beyond to music. Professional recording studio, music shop, and online marketplace for instruments and gear.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
+              <a 
+                href="https://www.facebook.com/3rdStreetMusic" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors"
+              >
+                <Facebook className="w-5 h-5 text-white" />
+              </a>
+              <a 
+                href="https://www.instagram.com/3rdstreetmusic" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors"
+              >
                 <Instagram className="w-5 h-5 text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
-                <Twitter className="w-5 h-5 text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
-                <Youtube className="w-5 h-5 text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors">
-                <Facebook className="w-5 h-5 text-white" />
+              <a 
+                href="https://3rdStreetMusic.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors"
+              >
+                <Globe className="w-5 h-5 text-white" />
               </a>
             </div>
           </div>
@@ -43,6 +54,7 @@ const Footer = () => {
               <li><a href="#services" className="text-gray-400 hover:text-white transition-colors">Mastering</a></li>
               <li><a href="#services" className="text-gray-400 hover:text-white transition-colors">Beat Production</a></li>
               <li><a href="#services" className="text-gray-400 hover:text-white transition-colors">Vocal Production</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Reverb Marketplace</a></li>
             </ul>
           </div>
 
@@ -50,9 +62,14 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-gray-400">
-              <li>(555) 123-4567</li>
-              <li>info@3rdstreetmusic.com</li>
-              <li>123 Music Row<br />Nashville, TN 37203</li>
+              <li>(513) 737-1900</li>
+              <li>miles@3rdstreetmusic.com</li>
+              <li>230 N 3rd Street<br />Hamilton, OH 45011</li>
+              <li className="pt-2">
+                <a href="https://3rdStreetMusic.com" className="hover:text-white transition-colors">
+                  3rdStreetMusic.com
+                </a>
+              </li>
             </ul>
           </div>
         </div>
