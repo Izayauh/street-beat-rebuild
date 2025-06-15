@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import Services from '@/components/Services';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import PromoPopup from '@/components/PromoPopup';
 
 const Index = () => {
   const contactRef = useRef<HTMLDivElement>(null);
@@ -24,6 +25,7 @@ const Index = () => {
         </div>
       </main>
       <Footer />
+      <PromoPopup />
     </div>
   );
 };
