@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +29,11 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const handleLessonsClick = () => {
+    navigate('/lessons');
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800">
       <div className="container mx-auto px-4 py-4">
@@ -46,6 +50,12 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
             <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
+            <button 
+              onClick={handleLessonsClick}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Lessons
+            </button>
             <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
             
             {user ? (
@@ -101,6 +111,12 @@ const Header = () => {
             <div className="flex flex-col space-y-4">
               <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
               <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
+              <button 
+                onClick={handleLessonsClick}
+                className="text-gray-300 hover:text-white transition-colors text-left"
+              >
+                Lessons
+              </button>
               <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
               
               {user ? (
