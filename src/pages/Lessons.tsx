@@ -29,7 +29,6 @@ const LESSON_TYPES = [
 const Lessons = () => {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<string>('');
-  const [showBookingForm, setShowBookingForm] = useState(false);
 
   useEffect(() => {
     fetchInstructors();
@@ -57,12 +56,17 @@ const Lessons = () => {
     if (lessonType) {
       setSelectedLesson(lessonType);
     }
-    setShowBookingForm(true);
+    scrollToBooking();
   };
 
   const scrollToBooking = () => {
     const bookingSection = document.getElementById('booking-section');
     bookingSection?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToLessonTypes = () => {
+    const lessonTypesSection = document.getElementById('lesson-types');
+    lessonTypesSection?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -92,7 +96,7 @@ const Lessons = () => {
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => document.getElementById('lesson-types')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={scrollToLessonTypes}
               className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-black px-8 py-3 text-lg"
               size="lg"
             >
