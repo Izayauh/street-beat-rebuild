@@ -38,8 +38,8 @@ const Contact = () => {
 
       console.log('Message saved to database successfully');
 
-      // Send confirmation email
-      console.log('Attempting to send confirmation email...');
+      // Send confirmation email using direct fetch to edge function
+      console.log('Attempting to send confirmation email via direct fetch...');
       const emailPayload = {
         name: formData.name,
         email: formData.email,
@@ -48,18 +48,30 @@ const Contact = () => {
       
       console.log('Email payload:', emailPayload);
 
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-        body: emailPayload
+      const edgeFunctionUrl = `https://rbikuvzeyarcmznvoxns.supabase.co/functions/v1/send-confirmation-email`;
+      console.log('Edge function URL:', edgeFunctionUrl);
+
+      const emailResponse = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiaWt1dnpleWFyY216bnZveG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MjEyNDIsImV4cCI6MjA2NTQ5NzI0Mn0.vvdVgdIbFKlp6bmINeXFvbDgkLZIA_DFBd2aIiH1Lrk`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiaWt1dnpleWFyY216bnZveG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MjEyNDIsImV4cCI6MjA2NTQ5NzI0Mn0.vvdVgdIbFKlp6bmINeXFvbDgkLZIA_DFBd2aIiH1Lrk'
+        },
+        body: JSON.stringify(emailPayload)
       });
 
-      console.log('Email function response:', { emailData, emailError });
+      console.log('Email response status:', emailResponse.status);
+      console.log('Email response headers:', emailResponse.headers);
 
-      if (emailError) {
-        console.error('Email function error:', emailError);
-        // Don't throw - the main contact submission was successful
+      const emailResponseData = await emailResponse.json();
+      console.log('Email response data:', emailResponseData);
+
+      if (!emailResponse.ok) {
+        console.error('Email function failed:', emailResponseData);
         toast.error('Message sent but confirmation email failed. We will still contact you!');
       } else {
-        console.log('Confirmation email sent successfully');
+        console.log('Confirmation email sent successfully via direct fetch');
         toast.success('Message sent successfully! Check your email for confirmation.');
       }
 
