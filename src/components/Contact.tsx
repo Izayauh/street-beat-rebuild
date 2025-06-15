@@ -22,62 +22,67 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
-    console.log('Form submission started with data:', formData);
+    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('Form data:', formData);
 
     try {
-      // Save to database
-      console.log('Saving to database...');
+      // Step 1: Save to database
+      console.log('Step 1: Saving to database...');
       const { error: dbError } = await supabase
         .from('contacts')
         .insert([formData]);
 
       if (dbError) {
         console.error('Database error:', dbError);
-        throw dbError;
+        throw new Error(`Database error: ${dbError.message}`);
       }
 
-      console.log('Message saved to database successfully');
+      console.log('✅ Database save successful');
 
-      // Send confirmation email using direct fetch to edge function
-      console.log('Attempting to send confirmation email via direct fetch...');
+      // Step 2: Send confirmation email
+      console.log('Step 2: Sending confirmation email...');
+      
       const emailPayload = {
         name: formData.name,
         email: formData.email,
-        service: formData.service
+        service: formData.service,
+        message: formData.message
       };
       
       console.log('Email payload:', emailPayload);
 
-      const edgeFunctionUrl = `https://rbikuvzeyarcmznvoxns.supabase.co/functions/v1/send-confirmation-email`;
-      console.log('Edge function URL:', edgeFunctionUrl);
+      const response = await fetch(
+        'https://rbikuvzeyarcmznvoxns.supabase.co/functions/v1/send-confirmation-email',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiaWt1dnpleWFyY216bnZveG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MjEyNDIsImV4cCI6MjA2NTQ5NzI0Mn0.vvdVgdIbFKlp6bmINeXFvbDgkLZIA_DFBd2aIiH1Lrk`,
+          },
+          body: JSON.stringify(emailPayload)
+        }
+      );
 
-      const emailResponse = await fetch(edgeFunctionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiaWt1dnpleWFyY216bnZveG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MjEyNDIsImV4cCI6MjA2NTQ5NzI0Mn0.vvdVgdIbFKlp6bmINeXFvbDgkLZIA_DFBd2aIiH1Lrk`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiaWt1dnpleWFyY216bnZveG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MjEyNDIsImV4cCI6MjA2NTQ5NzI0Mn0.vvdVgdIbFKlp6bmINeXFvbDgkLZIA_DFBd2aIiH1Lrk'
-        },
-        body: JSON.stringify(emailPayload)
-      });
+      console.log('Email response status:', response.status);
+      console.log('Email response ok:', response.ok);
 
-      console.log('Email response status:', emailResponse.status);
-      console.log('Email response headers:', emailResponse.headers);
+      const responseData = await response.json();
+      console.log('Email response data:', responseData);
 
-      const emailResponseData = await emailResponse.json();
-      console.log('Email response data:', emailResponseData);
-
-      if (!emailResponse.ok) {
-        console.error('Email function failed:', emailResponseData);
-        toast.error('Message sent but confirmation email failed. We will still contact you!');
-      } else {
-        console.log('Confirmation email sent successfully via direct fetch');
+      if (response.ok && responseData.success) {
+        console.log('✅ Email sent successfully');
         toast.success('Message sent successfully! Check your email for confirmation.');
+      } else {
+        console.error('❌ Email failed:', responseData);
+        toast.error('Message saved but email confirmation failed. We will still contact you!');
       }
 
+      // Reset form
       setFormData({ name: '', email: '', service: '', message: '' });
+
     } catch (error: any) {
-      console.error('Error submitting form:', error);
+      console.error('=== SUBMISSION ERROR ===');
+      console.error('Error:', error);
       toast.error('Failed to send message. Please try again.');
     } finally {
       setLoading(false);
@@ -197,7 +202,7 @@ const Contact = () => {
                     <a href="mailto:miles@3rdstreetmusic.com" className="text-gray-400 hover:text-white transition-colors">
                       miles@3rdstreetmusic.com
                     </a>
-                  </div>
+                    </div>
                 </div>
 
                 <div className="flex items-start space-x-4">
