@@ -77,7 +77,7 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
           email: formData.email,
           phone: formData.phone || null,
           lesson_type: formData.lessonType,
-          instructor: formData.instructor || null,
+          instructor: formData.instructor === 'no-preference' ? null : formData.instructor,
           preferred_date: formData.preferredDate || null,
           preferred_time: formData.preferredTime || null,
           message: formData.message || null,
@@ -190,7 +190,7 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
                   <SelectValue placeholder="Any instructor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No preference</SelectItem>
+                  <SelectItem value="no-preference">No preference</SelectItem>
                   {getFilteredInstructors().map((instructor) => (
                     <SelectItem key={instructor.id} value={instructor.name}>
                       {instructor.name}
