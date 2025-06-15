@@ -36,6 +36,81 @@ export type Database = {
         }
         Relationships: []
       }
+      instructors: {
+        Row: {
+          available_days: string[] | null
+          bio: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          specialties: string[] | null
+        }
+        Insert: {
+          available_days?: string[] | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          specialties?: string[] | null
+        }
+        Update: {
+          available_days?: string[] | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          specialties?: string[] | null
+        }
+        Relationships: []
+      }
+      lesson_bookings: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          instructor: string | null
+          lesson_type: string
+          message: string | null
+          name: string
+          phone: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          instructor?: string | null
+          lesson_type: string
+          message?: string | null
+          name: string
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          instructor?: string | null
+          lesson_type?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

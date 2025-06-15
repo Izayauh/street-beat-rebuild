@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import ContactMessages from "./pages/ContactMessages";
+import Lessons from "./pages/Lessons";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirm" element={<EmailConfirmation />} />
             <Route path="/contact-messages" element={<ContactMessages />} />
+            <Route path="/lessons" element={<Lessons />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
