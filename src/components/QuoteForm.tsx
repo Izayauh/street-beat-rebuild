@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, Mail, CheckCircle } from "lucide-react";
 
 interface Step {
   label: string;
@@ -218,12 +220,15 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
   if (showSuccess) {
     return (
       <div className="p-8 flex flex-col items-center text-center">
-        <span role="img" aria-label="check" className="text-4xl mb-3">
-          ✅
-        </span>
-        <div className="text-xl text-white mb-1">Quote request submitted!</div>
-        <div className="text-gray-400 mb-2">
-          Thank you! Our team will reach out soon.
+        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle className="w-8 h-8 text-green-400" />
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-2">Quote request submitted!</h3>
+        <p className="text-gray-400 mb-4">
+          Thank you! Our team will reach out soon with your personalized quote.
+        </p>
+        <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 animate-pulse"></div>
         </div>
       </div>
     );
@@ -231,100 +236,157 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
 
   // Final step is email capture if user not logged in
   const isFinalStep = step === steps.length;
+  const progressPercentage = ((step + (isFinalStep && !user ? 1 : 0)) / (steps.length + (!user ? 1 : 0))) * 100;
+
   return (
-    <form
-      className="p-2 flex flex-col items-center w-full max-w-sm"
-      onSubmit={handleSubmit}
-      autoComplete="off"
-    >
-      {!isFinalStep && (
-        <>
-          <div className="mb-6 w-full text-left">
-            <label className="text-lg font-bold text-white mb-4 block">{current.label}</label>
-            {current.inputType === "radio" && current.options ? (
-              <div className="flex flex-col space-y-2">
-                {current.options.map((opt) => (
-                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-gray-200 hover:text-white">
-                    <input
-                      type="radio"
-                      className="accent-purple-500"
-                      value={opt}
-                      checked={answers[current.name] === opt}
-                      onChange={() => handleInput(current.name, opt)}
-                      required={current.required}
-                    />
-                    {opt}
-                  </label>
-                ))}
+    <div className="max-w-lg mx-auto">
+      {/* Progress Bar */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm text-gray-400">Step {step + (isFinalStep && !user ? 1 : 0)} of {steps.length + (!user ? 1 : 0)}</span>
+          <span className="text-sm text-gray-400">{Math.round(progressPercentage)}% Complete</span>
+        </div>
+        <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 ease-out"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {!isFinalStep && (
+          <Card className="bg-gray-900/50 border-gray-800">
+            <CardContent className="p-8">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">{current.label}</h2>
+                  <p className="text-gray-400 text-sm">
+                    {current.required ? "This field is required" : "This field is optional"}
+                  </p>
+                </div>
+
+                {current.inputType === "radio" && current.options ? (
+                  <div className="grid gap-3">
+                    {current.options.map((opt) => (
+                      <label 
+                        key={opt} 
+                        className="flex items-center p-4 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer hover:border-purple-500/50 transition-all duration-200 group"
+                      >
+                        <input
+                          type="radio"
+                          className="w-4 h-4 text-purple-500 bg-gray-700 border-gray-600 focus:ring-purple-500 focus:ring-2"
+                          value={opt}
+                          checked={answers[current.name] === opt}
+                          onChange={() => handleInput(current.name, opt)}
+                          required={current.required}
+                        />
+                        <span className="ml-3 text-gray-200 group-hover:text-white transition-colors">
+                          {opt}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                ) : current.inputType === "textarea" ? (
+                  <Textarea
+                    value={answers[current.name] || ""}
+                    onChange={(e) => handleInput(current.name, e.target.value)}
+                    placeholder={current.placeholder}
+                    required={current.required}
+                    className="min-h-[120px] bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-500 resize-none"
+                  />
+                ) : (
+                  <Input
+                    type={current.inputType}
+                    value={answers[current.name] || ""}
+                    onChange={(e) => handleInput(current.name, e.target.value)}
+                    placeholder={current.placeholder}
+                    required={current.required}
+                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-500"
+                  />
+                )}
               </div>
-            ) : current.inputType === "textarea" ? (
-              <Textarea
-                value={answers[current.name] || ""}
-                onChange={(e) => handleInput(current.name, e.target.value)}
-                placeholder={current.placeholder}
-                required={current.required}
-              />
-            ) : (
-              <Input
-                type={current.inputType}
-                value={answers[current.name] || ""}
-                onChange={(e) => handleInput(current.name, e.target.value)}
-                placeholder={current.placeholder}
-                required={current.required}
-              />
-            )}
-          </div>
-          <div className="flex justify-between w-full">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleBack}
-              disabled={step === 0}
-              className="mr-2"
-            >
-              Back
-            </Button>
-            <Button
-              type="button"
-              onClick={handleNext}
-              className="ml-2"
-            >
-              Next
-            </Button>
-          </div>
-        </>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Email step for guest users */}
-      {isFinalStep && !user && (
-        <>
-          <div className="mb-6 w-full text-left">
-            <label className="text-lg font-bold text-white mb-3 block">Enter your email so we can send your quote</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setEmailError(null);
-              }}
-              placeholder="your@email.com"
+        {/* Email step for guest users */}
+        {isFinalStep && !user && (
+          <Card className="bg-gray-900/50 border-gray-800">
+            <CardContent className="p-8">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Almost done!</h2>
+                  <p className="text-gray-400">Enter your email so we can send you the quote</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError(null);
+                    }}
+                    placeholder="your@email.com"
+                    disabled={submitting}
+                    required
+                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-500"
+                  />
+                  {emailError && (
+                    <p className="text-red-400 text-sm">{emailError}</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center pt-4">
+          {!isFinalStep ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                disabled={step === 0}
+                className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </>
+          ) : (
+            <Button 
+              type="submit" 
               disabled={submitting}
-              required
-            />
-            {emailError && <div className="text-red-400 text-sm mt-2">{emailError}</div>}
-          </div>
-          <Button className="w-full" type="submit" disabled={submitting}>
-            {submitting ? "Submitting..." : "Submit Request"}
-          </Button>
-        </>
-      )}
-
-      {isFinalStep && user && (
-        <Button className="w-full" type="submit" disabled={submitting}>
-          {submitting ? "Submitting..." : "Submit Request"}
-        </Button>
-      )}
-    </form>
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 text-lg font-semibold"
+            >
+              {submitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  Submitting...
+                </>
+              ) : (
+                "Submit Request"
+              )}
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 };
 

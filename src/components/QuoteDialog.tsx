@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import QuoteForm from "./QuoteForm";
+import { X } from "lucide-react";
 
 interface QuoteDialogProps {
   open: boolean;
@@ -19,18 +20,27 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-black max-w-md mx-auto p-0 sm:p-0 rounded-xl shadow-xl">
-        <DialogHeader>
-          <DialogTitle className="text-white text-2xl text-center pt-4 pb-1">Get a Personalized Quote</DialogTitle>
+      <DialogContent className="bg-black/95 backdrop-blur-sm border border-gray-800 max-w-2xl mx-auto p-0 rounded-2xl shadow-2xl">
+        <DialogHeader className="p-8 pb-4">
+          <DialogTitle className="text-white text-3xl font-bold text-center bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            Get Your Personalized Quote
+          </DialogTitle>
+          <p className="text-gray-400 text-center mt-2">
+            Tell us about your project and we'll provide a custom quote within 24 hours
+          </p>
         </DialogHeader>
-        <QuoteForm key={formKey} onSuccess={handleClose} />
+        
+        <div className="px-8 pb-8">
+          <QuoteForm key={formKey} onSuccess={handleClose} />
+        </div>
+        
         <DialogClose asChild>
           <button
             aria-label="Close"
-            className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl"
+            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800"
             onClick={handleClose}
           >
-            ×
+            <X className="w-5 h-5" />
           </button>
         </DialogClose>
       </DialogContent>
