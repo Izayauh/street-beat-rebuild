@@ -113,11 +113,18 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Starting quote submission...');
+    console.log('User authenticated:', !!user);
+    console.log('Supabase client available:', !!supabase);
+    
     // Validate email for guests
     if (!user) {
       const emailErr = validateEmail(email);
       setEmailError(emailErr);
-      if (emailErr) return;
+      if (emailErr) {
+        console.log('Email validation failed:', emailErr);
+        return;
+      }
     }
     
     setSubmitting(true);
@@ -147,7 +154,15 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
 
       if (error) {
         console.error('Database error:', error);
-        throw new Error("Failed to save quote to database");
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.details);
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      if (!data || data.length === 0) {
+        console.error('No data returned from insert operation');
+        throw new Error("No data returned from database");
       }
 
       console.log('Quote saved successfully:', data[0]);
@@ -182,8 +197,21 @@ const QuoteForm: React.FC<QuoteFormProps> = ({ onSuccess }) => {
 
     } catch (error: any) {
       console.error('Quote submission error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error stack:', error.stack);
       setSubmitting(false);
-      toast.error(error.message || "Failed to submit quote. Please try again.");
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to submit quote. Please try again.";
+      if (error.message?.includes('JWT')) {
+        errorMessage = "Authentication error. Please try logging in again.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
