@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Calendar, Clock, User, Mail, Phone, MessageSquare } from 'lucide-react';
+import { Calendar, User, Mail, Phone, MessageSquare } from 'lucide-react';
+import { format } from 'date-fns';
+import TimeSlotCalendar from './TimeSlotCalendar';
 
 interface Instructor {
   id: string;
@@ -26,12 +28,6 @@ interface LessonBookingFormProps {
 
 const LESSON_TYPES = ['Piano', 'Vocal', 'Drums', 'Guitar', 'Music Production'];
 
-const TIME_SLOTS = [
-  '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', 
-  '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'
-];
-
 const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBookingFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -39,10 +35,10 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
     phone: '',
     lessonType: selectedLessonType,
     instructor: '',
-    preferredDate: '',
-    preferredTime: '',
     message: ''
   });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
@@ -67,6 +63,11 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
       return;
     }
 
+    if (!selectedDate || !selectedTime) {
+      toast.error('Please select a date and time for your lesson');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -78,8 +79,8 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
           phone: formData.phone || null,
           lesson_type: formData.lessonType,
           instructor: formData.instructor === 'no-preference' ? null : formData.instructor,
-          preferred_date: formData.preferredDate || null,
-          preferred_time: formData.preferredTime || null,
+          preferred_date: format(selectedDate, 'yyyy-MM-dd'),
+          preferred_time: selectedTime,
           message: formData.message || null,
           status: 'pending'
         });
@@ -99,10 +100,10 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
         phone: '',
         lessonType: selectedLessonType,
         instructor: '',
-        preferredDate: '',
-        preferredTime: '',
         message: ''
       });
+      setSelectedDate(undefined);
+      setSelectedTime('');
 
     } catch (error) {
       console.error('Error:', error);
@@ -201,38 +202,15 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
             </div>
           </div>
 
-          {/* Scheduling */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="date" className="text-gray-300 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Preferred Date
-              </Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.preferredDate}
-                onChange={(e) => handleInputChange('preferredDate', e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white"
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-            <div>
-              <Label className="text-gray-300 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Preferred Time
-              </Label>
-              <Select value={formData.preferredTime} onValueChange={(value) => handleInputChange('preferredTime', value)}>
-                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Choose a time" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIME_SLOTS.map((time) => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Calendar Scheduling */}
+          <div>
+            <Label className="text-gray-300 text-lg mb-4 block">Schedule Your Lesson *</Label>
+            <TimeSlotCalendar
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              onDateSelect={setSelectedDate}
+              onTimeSelect={setSelectedTime}
+            />
           </div>
 
           {/* Message */}
@@ -254,8 +232,8 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
           {/* Submit Button */}
           <Button 
             type="submit" 
-            disabled={isSubmitting}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg"
+            disabled={isSubmitting || !selectedDate || !selectedTime}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg disabled:opacity-50"
           >
             {isSubmitting ? 'Submitting...' : 'Book My Lesson 🎵'}
           </Button>
