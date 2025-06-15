@@ -19,6 +19,7 @@ interface Instructor {
   specialties: string[] | null;
   image_url: string | null;
   available_days: string[] | null;
+  email?: string | null;
 }
 
 interface LessonBookingFormProps {
@@ -53,6 +54,43 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
         specialty.toLowerCase().includes(formData.lessonType.toLowerCase())
       )
     );
+  };
+
+  const sendConfirmationEmails = async (bookingData: any) => {
+    try {
+      // Find the selected instructor's email
+      const selectedInstructor = instructors.find(
+        instructor => instructor.name === formData.instructor
+      );
+
+      const emailData = {
+        studentName: formData.name,
+        studentEmail: formData.email,
+        studentPhone: formData.phone,
+        lessonType: formData.lessonType,
+        instructorName: selectedInstructor?.name,
+        instructorEmail: selectedInstructor?.email,
+        preferredDate: format(selectedDate!, 'yyyy-MM-dd'),
+        preferredTime: selectedTime,
+        message: formData.message,
+      };
+
+      console.log('Sending confirmation emails with data:', emailData);
+
+      const { error: emailError } = await supabase.functions.invoke('send-lesson-confirmation', {
+        body: emailData,
+      });
+
+      if (emailError) {
+        console.error('Error sending confirmation emails:', emailError);
+        toast.error('Booking saved but confirmation emails failed to send');
+      } else {
+        console.log('Confirmation emails sent successfully');
+      }
+    } catch (error) {
+      console.error('Error in email sending process:', error);
+      toast.error('Booking saved but confirmation emails failed to send');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +129,19 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
         return;
       }
 
-      toast.success('🎵 Booking submitted successfully! We\'ll be in touch within 24 hours.');
+      // Send confirmation emails
+      await sendConfirmationEmails({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        lesson_type: formData.lessonType,
+        instructor: formData.instructor === 'no-preference' ? null : formData.instructor,
+        preferred_date: format(selectedDate, 'yyyy-MM-dd'),
+        preferred_time: selectedTime,
+        message: formData.message,
+      });
+
+      toast.success('🎵 Booking submitted successfully! Check your email for confirmation.');
       
       // Reset form
       setFormData({
