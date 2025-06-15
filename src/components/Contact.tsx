@@ -22,36 +22,47 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
+    console.log('Form submission started with data:', formData);
+
     try {
       // Save to database
+      console.log('Saving to database...');
       const { error: dbError } = await supabase
         .from('contacts')
         .insert([formData]);
 
       if (dbError) {
+        console.error('Database error:', dbError);
         throw dbError;
       }
 
-      // Send confirmation email
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            name: formData.name,
-            email: formData.email,
-            service: formData.service
-          }
-        });
+      console.log('Message saved to database successfully');
 
-        if (emailError) {
-          console.warn('Failed to send confirmation email:', emailError);
-          // Don't throw - the main contact submission was successful
-        }
-      } catch (emailError) {
-        console.warn('Error sending confirmation email:', emailError);
+      // Send confirmation email
+      console.log('Attempting to send confirmation email...');
+      const emailPayload = {
+        name: formData.name,
+        email: formData.email,
+        service: formData.service
+      };
+      
+      console.log('Email payload:', emailPayload);
+
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+        body: emailPayload
+      });
+
+      console.log('Email function response:', { emailData, emailError });
+
+      if (emailError) {
+        console.error('Email function error:', emailError);
         // Don't throw - the main contact submission was successful
+        toast.error('Message sent but confirmation email failed. We will still contact you!');
+      } else {
+        console.log('Confirmation email sent successfully');
+        toast.success('Message sent successfully! Check your email for confirmation.');
       }
 
-      toast.success('Message sent successfully! Check your email for confirmation.');
       setFormData({ name: '', email: '', service: '', message: '' });
     } catch (error: any) {
       console.error('Error submitting form:', error);

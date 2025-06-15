@@ -16,12 +16,27 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Edge function called with method:', req.method);
+  
   if (req.method === "OPTIONS") {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { name, email, service }: ContactEmailRequest = await req.json();
+    console.log('Processing email request...');
+    const requestBody = await req.text();
+    console.log('Raw request body:', requestBody);
+    
+    const { name, email, service }: ContactEmailRequest = JSON.parse(requestBody);
+    console.log('Parsed request data:', { name, email, service });
+
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    console.log('API Key present:', !!apiKey);
+    
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY not found in environment variables');
+    }
 
     const html = `
       <!DOCTYPE html>
@@ -138,6 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    console.log('Attempting to send email via Resend...');
     const emailResponse = await resend.emails.send({
       from: "3rd Street Music <miles@3rdstreetmusic.com>",
       to: [email],
@@ -145,10 +161,13 @@ const handler = async (req: Request): Promise<Response> => {
       html,
     });
 
-    console.log("Confirmation email sent successfully:", emailResponse);
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(
-      JSON.stringify({ message: "Confirmation email sent successfully" }),
+      JSON.stringify({ 
+        message: "Confirmation email sent successfully",
+        emailResponse 
+      }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -157,7 +176,10 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending confirmation email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
