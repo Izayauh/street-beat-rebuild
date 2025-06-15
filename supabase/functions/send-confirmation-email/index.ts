@@ -1,6 +1,9 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { renderAsync } from "npm:@react-email/components@0.0.22";
+import React from "npm:react@18.3.1";
+import { ConfirmationEmail } from "./_templates/confirmation-email.tsx";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -17,7 +20,7 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('=== EMAIL FUNCTION CALLED ===');
+  console.log('=== REACT EMAIL FUNCTION CALLED ===');
   console.log('Method:', req.method);
   console.log('Headers:', Object.fromEntries(req.headers.entries()));
   
@@ -57,31 +60,25 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
+    console.log('Rendering React Email template...');
+    
+    // Render the React Email template
+    const emailHtml = await renderAsync(
+      React.createElement(ConfirmationEmail, {
+        name,
+        service,
+        message,
+      })
+    );
+
+    console.log('React Email template rendered successfully');
     console.log('Sending email to:', email);
     
     const emailResult = await resend.emails.send({
       from: "3rd Street Music <onboarding@resend.dev>", // Using resend's test domain
       to: [email],
-      subject: "🎵 Thanks for contacting 3rd Street Music!",
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background-color: #111111; color: white; padding: 40px; border-radius: 12px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <h1 style="color: #8B5CF6; margin: 0 0 16px 0;">🎵 3rd Street Music</h1>
-            <h2 style="margin: 0;">Thanks for reaching out, ${name}! 👋</h2>
-          </div>
-          
-          <div style="background-color: #1F2937; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
-            <p style="margin: 0 0 16px 0;">We received your message about <strong>${service || 'our services'}</strong> and we're excited to work with you!</p>
-            <p style="margin: 0;">Our team will review your request and get back to you within 24 hours.</p>
-          </div>
-          
-          <div style="text-align: center; background-color: #0F172A; padding: 24px; border-radius: 8px;">
-            <p style="margin: 0 0 16px 0;"><strong>📍 230 N 3rd Street, Hamilton, OH 45011</strong></p>
-            <p style="margin: 0 0 16px 0;"><strong>📞 (513) 737-1900</strong></p>
-            <p style="margin: 0;"><strong>✉️ miles@3rdstreetmusic.com</strong></p>
-          </div>
-        </div>
-      `,
+      subject: "🎵 Let's Make Music Together - Your Message Has Been Received!",
+      html: emailHtml,
     });
 
     console.log("Email sent successfully:", emailResult);
@@ -102,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error("=== EMAIL ERROR ===");
+    console.error("=== REACT EMAIL ERROR ===");
     console.error("Error message:", error.message);
     console.error("Error stack:", error.stack);
     
