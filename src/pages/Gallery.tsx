@@ -68,41 +68,47 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
       
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+      {/* Hero Section with analog warmth */}
+      <section className="pt-24 pb-16 px-4 section-warm relative">
+        <div className="absolute inset-0 texture-grain opacity-20"></div>
+        <div className="container mx-auto text-center relative z-10">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 analog-gradient bg-clip-text text-transparent warm-text-glow">
             Studio Gallery
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Take a look inside 3rd Street Music's professional recording facility. From our state-of-the-art control room to our acoustically treated live spaces, every corner is designed for creating exceptional music.
+          <p className="text-xl text-amber-200/80 max-w-3xl mx-auto text-serif leading-relaxed">
+            Step inside 3rd Street Music's creative sanctuary. From our vintage-modern control room to our acoustically crafted live spaces, every corner breathes music and inspiration.
           </p>
         </div>
       </section>
 
-      {/* Gallery Grid */}
+      {/* Gallery Grid with enhanced styling */}
       <section className="pb-16 px-4">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {galleryImages.map((image, index) => (
               <div
                 key={index}
-                className="group cursor-pointer overflow-hidden rounded-lg bg-gray-900 hover:bg-gray-800 transition-all duration-300"
+                className="group cursor-pointer overflow-hidden rounded-xl card-analog hover:warm-glow transition-all duration-500 transform hover:-translate-y-2"
                 onClick={() => openLightbox(index)}
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden relative">
                   <img
                     src={image.src}
                     alt={image.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">{image.title}</h3>
-                  <p className="text-gray-400 text-sm">{image.description}</p>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-amber-400 mb-3 group-hover:warm-text-glow transition-all duration-300">
+                    {image.title}
+                  </h3>
+                  <p className="text-amber-200/70 text-sm text-serif leading-relaxed">
+                    {image.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -110,10 +116,10 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal with analog styling */}
       {selectedImage !== null && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 texture-grain"
           onClick={closeLightbox}
           onKeyDown={handleKeyDown}
           tabIndex={0}
@@ -123,68 +129,74 @@ const Gallery = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 z-10"
+              className="absolute -top-12 right-0 text-amber-400 hover:text-amber-300 z-10 glass-effect hover:warm-glow"
               onClick={closeLightbox}
             >
               <X size={24} />
             </Button>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons with analog styling */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black/50 hover:bg-black/70"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-300 glass-effect hover:warm-glow transition-all duration-300"
               onClick={prevImage}
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={28} />
             </Button>
             
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black/50 hover:bg-black/70"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-300 glass-effect hover:warm-glow transition-all duration-300"
               onClick={nextImage}
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={28} />
             </Button>
 
-            {/* Image */}
-            <img
-              src={galleryImages[selectedImage].src}
-              alt={galleryImages[selectedImage].alt}
-              className="max-w-full max-h-[80vh] object-contain"
-            />
+            {/* Image with warm border */}
+            <div className="rounded-lg overflow-hidden warm-glow">
+              <img
+                src={galleryImages[selectedImage].src}
+                alt={galleryImages[selectedImage].alt}
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+            </div>
 
-            {/* Image Info */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-              <h3 className="text-2xl font-bold text-white mb-2">
+            {/* Image Info with analog styling */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-8">
+              <h3 className="text-3xl font-bold text-amber-400 mb-3 warm-text-glow">
                 {galleryImages[selectedImage].title}
               </h3>
-              <p className="text-gray-300">
+              <p className="text-amber-200/80 text-lg text-serif leading-relaxed">
                 {galleryImages[selectedImage].description}
               </p>
             </div>
 
-            {/* Image Counter */}
-            <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded">
+            {/* Image Counter with warm styling */}
+            <div className="absolute top-4 left-4 glass-effect text-amber-400 px-4 py-2 rounded-lg font-medium">
               {selectedImage + 1} / {galleryImages.length}
             </div>
           </div>
         </div>
       )}
 
-      {/* Call to Action */}
-      <section className="py-16 px-4 bg-gradient-to-r from-purple-900/50 to-blue-900/50">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Record?</h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Experience our world-class facilities firsthand. Book your session today and create something amazing.
+      {/* Call to Action with enhanced analog styling */}
+      <section className="py-20 px-4 analog-gradient-dark relative overflow-hidden">
+        <div className="absolute inset-0 texture-grain opacity-30"></div>
+        <div className="container mx-auto text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 text-amber-400 warm-text-glow">
+            Ready to Record?
+          </h2>
+          <p className="text-xl text-amber-200/80 mb-10 max-w-2xl mx-auto text-serif leading-relaxed">
+            Experience our world-class facilities firsthand. Book your session today and let's create something extraordinary together.
           </p>
           <Button
             onClick={() => window.location.href = '/lessons'}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+            className="btn-analog text-black px-10 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300"
           >
             Book Studio Time
+            <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
       </section>
