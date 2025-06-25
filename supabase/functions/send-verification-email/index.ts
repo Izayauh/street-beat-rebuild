@@ -1,6 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { sendEmail } from "../_shared/email-utils.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -90,24 +92,27 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    const success = await sendEmail({
-      to: email,
+    const { error } = await resend.emails.send({
+      from: `3rd Street Music <onboarding@resend.dev>`,
+      to: [email],
       subject: "Welcome to 3rd Street Music - Verify Your Email",
       html,
-      from: `3rd Street Music <${Deno.env.get('SMTP_USER')}>`
     });
 
-    if (success) {
-      return new Response(
-        JSON.stringify({ message: "Verification email sent successfully" }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    } else {
-      throw new Error("Failed to send email");
+    if (error) {
+      console.error("Resend error:", error);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
+
+    console.log("Verification email sent successfully to:", email);
+
+    return new Response(
+      JSON.stringify({ message: "Verification email sent successfully" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   } catch (error: any) {
     console.error("Error sending verification email:", error);
     return new Response(
