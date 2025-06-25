@@ -164,137 +164,135 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
   };
 
   return (
-    <Card className="bg-gray-800/50 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-white text-2xl text-center flex items-center justify-center gap-2">
-          <Calendar className="w-6 h-6 text-purple-400" />
+    <div className="card-analog rounded-2xl p-8 warm-glow">
+      <div className="mb-6 text-center">
+        <h3 className="text-amber-400 text-2xl font-display warm-text-glow flex items-center justify-center gap-2">
+          <Calendar className="w-6 h-6" />
           Book Your Lesson
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Info */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Full Name *
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white"
-                required
-              />
-            </div>
-          </div>
-
+        </h3>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Personal Info */}
+        <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="phone" className="text-gray-300 flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              Phone Number
+            <Label htmlFor="name" className="text-amber-300 flex items-center gap-2 font-display">
+              <User className="w-4 h-4" />
+              Full Name *
             </Label>
             <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              className="bg-gray-700 border-gray-600 text-white"
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
+              required
             />
           </div>
-
-          {/* Lesson Details */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-gray-300">Lesson Type *</Label>
-              <Select value={formData.lessonType} onValueChange={(value) => handleInputChange('lessonType', value)}>
-                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Choose an instrument" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LESSON_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-gray-300">Preferred Instructor</Label>
-              <Select value={formData.instructor} onValueChange={(value) => handleInputChange('instructor', value)}>
-                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Any instructor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no-preference">No preference</SelectItem>
-                  {getFilteredInstructors().map((instructor) => (
-                    <SelectItem key={instructor.id} value={instructor.name}>
-                      {instructor.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Calendar Scheduling */}
           <div>
-            <Label className="text-gray-300 text-lg mb-4 block">Schedule Your Lesson *</Label>
-            <TimeSlotCalendar
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
-              onDateSelect={setSelectedDate}
-              onTimeSelect={setSelectedTime}
-            />
-          </div>
-
-          {/* Message */}
-          <div>
-            <Label htmlFor="message" className="text-gray-300 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Additional Notes
+            <Label htmlFor="email" className="text-amber-300 flex items-center gap-2 font-display">
+              <Mail className="w-4 h-4" />
+              Email *
             </Label>
-            <Textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => handleInputChange('message', e.target.value)}
-              placeholder="Tell us about your musical experience, goals, or any specific requests..."
-              className="bg-gray-700 border-gray-600 text-white"
-              rows={4}
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
+              required
             />
           </div>
-
-          {/* Submit Button */}
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || !selectedDate || !selectedTime}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-lg disabled:opacity-50"
-          >
-            {isSubmitting ? 'Submitting...' : 'Book My Lesson 🎵'}
-          </Button>
-        </form>
-        
-        <div className="mt-6 text-center text-gray-400 text-sm">
-          <p>We'll contact you within 24 hours to confirm your lesson details.</p>
-          <p className="mt-2">Questions? Call us at (555) 123-MUSIC or email hello@3rdstreetmusic.com</p>
         </div>
-      </CardContent>
-    </Card>
+
+        <div>
+          <Label htmlFor="phone" className="text-amber-300 flex items-center gap-2 font-display">
+            <Phone className="w-4 h-4" />
+            Phone Number
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => handleInputChange('phone', e.target.value)}
+            className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
+          />
+        </div>
+
+        {/* Lesson Details */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label className="text-amber-300 font-display">Lesson Type *</Label>
+            <Select value={formData.lessonType} onValueChange={(value) => handleInputChange('lessonType', value)}>
+              <SelectTrigger className="bg-black/40 border-amber-500/30 text-amber-100 glass-effect">
+                <SelectValue placeholder="Choose an instrument" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-amber-500/30">
+                {LESSON_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-amber-300 font-display">Preferred Instructor</Label>
+            <Select value={formData.instructor} onValueChange={(value) => handleInputChange('instructor', value)}>
+              <SelectTrigger className="bg-black/40 border-amber-500/30 text-amber-100 glass-effect">
+                <SelectValue placeholder="Any instructor" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-amber-500/30">
+                <SelectItem value="no-preference">No preference</SelectItem>
+                {getFilteredInstructors().map((instructor) => (
+                  <SelectItem key={instructor.id} value={instructor.name}>
+                    {instructor.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Calendar Scheduling */}
+        <div>
+          <Label className="text-amber-300 text-lg mb-4 block font-display">Schedule Your Lesson *</Label>
+          <TimeSlotCalendar
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            onDateSelect={setSelectedDate}
+            onTimeSelect={setSelectedTime}
+          />
+        </div>
+
+        {/* Message */}
+        <div>
+          <Label htmlFor="message" className="text-amber-300 flex items-center gap-2 font-display">
+            <MessageSquare className="w-4 h-4" />
+            Additional Notes
+          </Label>
+          <Textarea
+            id="message"
+            value={formData.message}
+            onChange={(e) => handleInputChange('message', e.target.value)}
+            placeholder="Tell us about your musical experience, goals, or any specific requests..."
+            className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
+            rows={4}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || !selectedDate || !selectedTime}
+          className="w-full btn-analog text-black py-3 text-lg disabled:opacity-50 transform hover:scale-105 transition-all duration-300"
+        >
+          {isSubmitting ? 'Submitting...' : 'Book My Lesson 🎵'}
+        </Button>
+      </form>
+      
+      <div className="mt-6 text-center text-amber-200/70 text-sm">
+        <p className="text-serif">We'll contact you within 24 hours to confirm your lesson details.</p>
+        <p className="mt-2 text-serif">Questions? Call us at (513) 737-1900 or email miles@3rdstreetmusic.com</p>
+      </div>
+    </div>
   );
 };
 
