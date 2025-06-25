@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +35,11 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const handleGalleryClick = () => {
+    navigate('/gallery');
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800">
       <div className="container mx-auto px-4 py-4">
@@ -55,6 +61,12 @@ const Header = () => {
               className="text-gray-300 hover:text-white transition-colors"
             >
               Lessons
+            </button>
+            <button 
+              onClick={handleGalleryClick}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Gallery
             </button>
             <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
             
@@ -116,6 +128,12 @@ const Header = () => {
                 className="text-gray-300 hover:text-white transition-colors text-left"
               >
                 Lessons
+              </button>
+              <button 
+                onClick={handleGalleryClick}
+                className="text-gray-300 hover:text-white transition-colors text-left"
+              >
+                Gallery
               </button>
               <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
               
