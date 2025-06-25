@@ -1,3 +1,4 @@
+
 import { Mic, Headphones, Volume2, Music, User, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 import QuoteDialog from './QuoteDialog';
@@ -50,52 +51,56 @@ const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
   const [quoteOpen, setQuoteOpen] = useState(false);
 
   return (
-    <section id="services" className="py-20 bg-gray-900">
+    <section id="services" className="py-20 section-warm relative overflow-hidden">
+      <div className="absolute inset-0 texture-grain opacity-20"></div>
       <QuoteDialog open={quoteOpen} onOpenChange={setQuoteOpen} />
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Section Header with analog styling */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Our <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Services</span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 analog-gradient bg-clip-text text-transparent warm-text-glow">
+            Our Services
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            From concept to completion, we provide all the services you need to bring your musical vision to life.
+          <p className="text-xl text-amber-200/80 max-w-2xl mx-auto text-serif leading-relaxed">
+            From concept to completion, we provide all the services you need to bring your musical vision to life with soul and craftsmanship.
           </p>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Grid with analog cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => {
             const IconComponent = service.icon;
             return (
               <div
                 key={index}
-                className="group bg-black/40 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105"
+                className="group card-analog rounded-2xl p-8 hover:warm-glow transition-all duration-500 transform hover:-translate-y-2 animate-float"
+                style={{ animationDelay: `${index * 0.5}s` }}
               >
-                {/* Icon */}
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <IconComponent className="w-8 h-8 text-white" />
+                {/* Icon with warm styling */}
+                <div className="w-16 h-16 analog-gradient rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 warm-glow">
+                  <IconComponent className="w-8 h-8 text-black" />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-2xl font-bold text-white mb-4">{service.title}</h3>
+                <h3 className="text-2xl font-bold text-amber-400 mb-4 warm-text-glow group-hover:text-amber-300 transition-colors">
+                  {service.title}
+                </h3>
 
                 {/* Description */}
-                <p className="text-gray-400 mb-6 leading-relaxed">{service.description}</p>
+                <p className="text-amber-200/70 mb-6 leading-relaxed text-serif">{service.description}</p>
 
                 {/* Features */}
                 <ul className="space-y-2 mb-8">
                   {service.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-gray-300">
-                      <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-3"></div>
+                    <li key={featureIndex} className="flex items-center text-amber-300/80">
+                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-3 animate-warm-pulse"></div>
                       {feature}
                     </li>
                   ))}
                 </ul>
 
-                {/* CTA Button */}
+                {/* CTA Button with analog styling */}
                 <button
-                  className="w-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 text-white py-3 rounded-lg hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-500/50 transition-all duration-300 font-semibold"
+                  className="w-full btn-analog text-black py-3 rounded-lg font-semibold transition-all duration-300"
                   onClick={() => setQuoteOpen(true)}
                   type="button"
                 >
@@ -106,15 +111,15 @@ const Services = ({ onGetQuote, onScheduleConsultation }: ServicesProps) => {
           })}
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom CTA with warm analog styling */}
         <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-2xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-white mb-4">Not sure which service you need?</h3>
-            <p className="text-gray-300 mb-6">
-              Let's discuss your project and find the perfect solution for your music.
+          <div className="card-analog rounded-2xl p-8 max-w-2xl mx-auto warm-glow">
+            <h3 className="text-2xl font-bold text-amber-400 mb-4 warm-text-glow">Not sure which service you need?</h3>
+            <p className="text-amber-200/80 mb-6 text-serif leading-relaxed">
+              Let's discuss your project and find the perfect solution for your music. Every artist's journey is unique.
             </p>
             <button
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+              className="btn-analog text-black px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
               onClick={onScheduleConsultation}
               type="button"
             >

@@ -41,41 +41,41 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-amber-500/20 texture-grain">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo with analog styling */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">3</span>
+            <div className="w-8 h-8 analog-gradient rounded-full flex items-center justify-center warm-glow">
+              <span className="text-black font-bold text-sm">3</span>
             </div>
-            <span className="text-white font-bold text-xl">3rd Street Music</span>
+            <span className="text-amber-100 font-bold text-xl font-display tracking-wide">3rd Street Music</span>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
-            <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
+            <a href="#home" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Home</a>
+            <a href="#services" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Services</a>
             <button 
               onClick={handleLessonsClick}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium"
             >
               Lessons
             </button>
             <button 
               onClick={handleGalleryClick}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium"
             >
               Gallery
             </button>
-            <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
+            <a href="#contact" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Contact</a>
             
             {user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-300">Welcome, {user.user_metadata?.full_name || user.email}</span>
+                <span className="text-amber-200/80 text-serif">Welcome, {user.user_metadata?.full_name || user.email}</span>
                 <Button
                   onClick={handleBookStudio}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                  className="btn-analog text-black px-6 py-2 rounded-full transform hover:scale-105 transition-all duration-300"
                 >
                   Book Studio Time
                 </Button>
@@ -83,7 +83,7 @@ const Header = () => {
                   onClick={handleSignOut}
                   variant="ghost"
                   size="sm"
-                  className="text-gray-300 hover:text-white"
+                  className="text-amber-200/80 hover:text-amber-100 hover:bg-amber-500/10 glass-effect"
                 >
                   <LogOut size={16} />
                 </Button>
@@ -93,14 +93,14 @@ const Header = () => {
                 <Button
                   onClick={handleAuthClick}
                   variant="ghost"
-                  className="text-gray-300 hover:text-white"
+                  className="text-amber-200/80 hover:text-amber-100 hover:bg-amber-500/10 glass-effect"
                 >
                   <User size={16} className="mr-2" />
                   Sign In
                 </Button>
                 <Button
                   onClick={handleBookStudio}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                  className="btn-analog text-black px-6 py-2 rounded-full transform hover:scale-105 transition-all duration-300"
                 >
                   Book Studio Time
                 </Button>
@@ -110,7 +110,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-white"
+            className="md:hidden text-amber-100 glass-effect p-2 rounded-lg"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -119,39 +119,39 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden mt-4 py-4 border-t border-gray-800">
+          <nav className="md:hidden mt-4 py-4 border-t border-amber-500/20">
             <div className="flex flex-col space-y-4">
-              <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
-              <a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a>
+              <a href="#home" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Home</a>
+              <a href="#services" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Services</a>
               <button 
                 onClick={handleLessonsClick}
-                className="text-gray-300 hover:text-white transition-colors text-left"
+                className="text-amber-200/80 hover:text-amber-100 transition-colors text-left font-medium"
               >
                 Lessons
               </button>
               <button 
                 onClick={handleGalleryClick}
-                className="text-gray-300 hover:text-white transition-colors text-left"
+                className="text-amber-200/80 hover:text-amber-100 transition-colors text-left font-medium"
               >
                 Gallery
               </button>
-              <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
+              <a href="#contact" className="text-amber-200/80 hover:text-amber-100 transition-colors font-medium">Contact</a>
               
               {user ? (
                 <>
-                  <span className="text-gray-300 py-2 border-t border-gray-800">
+                  <span className="text-amber-200/80 py-2 border-t border-amber-500/20 text-serif">
                     Welcome, {user.user_metadata?.full_name || user.email}
                   </span>
                   <Button
                     onClick={handleBookStudio}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-fit"
+                    className="btn-analog text-black px-6 py-2 rounded-full w-fit transform hover:scale-105 transition-all duration-300"
                   >
                     Book Studio Time
                   </Button>
                   <Button
                     onClick={handleSignOut}
                     variant="ghost"
-                    className="text-gray-300 hover:text-white w-fit"
+                    className="text-amber-200/80 hover:text-amber-100 hover:bg-amber-500/10 w-fit glass-effect"
                   >
                     <LogOut size={16} className="mr-2" />
                     Sign Out
@@ -162,14 +162,14 @@ const Header = () => {
                   <Button
                     onClick={handleAuthClick}
                     variant="ghost"
-                    className="text-gray-300 hover:text-white w-fit"
+                    className="text-amber-200/80 hover:text-amber-100 hover:bg-amber-500/10 w-fit glass-effect"
                   >
                     <User size={16} className="mr-2" />
                     Sign In
                   </Button>
                   <Button
                     onClick={handleBookStudio}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 w-fit"
+                    className="btn-analog text-black px-6 py-2 rounded-full w-fit transform hover:scale-105 transition-all duration-300"
                   >
                     Book Studio Time
                   </Button>
