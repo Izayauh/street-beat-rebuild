@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -68,8 +67,8 @@ const PAYMENT_PACKAGES = [
   }
 ];
 
-// Default Square location ID - you'll need to replace this with your actual location ID
-const SQUARE_LOCATION_ID = "main";
+// Updated with your actual Square location ID
+const SQUARE_LOCATION_ID = "LN9XH2MKEJKSF";
 
 const Payments = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
