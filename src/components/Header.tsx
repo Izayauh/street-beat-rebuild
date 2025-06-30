@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Music, Menu, X, ChevronDown } from 'lucide-react';
-import AuthForm from '@/components/AuthForm';
+import AuthForm from './AuthForm';
 import Contact from '@/components/Contact';
 import QuoteDialog from '@/components/QuoteDialog';
 import { useAuth } from '@/contexts/AuthContext';
