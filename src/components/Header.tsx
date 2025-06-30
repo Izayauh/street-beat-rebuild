@@ -219,7 +219,7 @@ const Header = () => {
         )}
       </div>
 
-      {/* Modals */}
+      {/* Auth Modal */}
       {isAuthOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full">
@@ -237,6 +237,7 @@ const Header = () => {
         </div>
       )}
 
+      {/* Contact Modal */}
       {isContactOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
