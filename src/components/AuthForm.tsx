@@ -10,7 +10,7 @@ interface AuthFormProps {
   onClose?: () => void;
 }
 
-const AuthForm = ({ onClose }: AuthFormProps) => {
+export const AuthForm = ({ onClose }: AuthFormProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -94,5 +94,3 @@ const AuthForm = ({ onClose }: AuthFormProps) => {
     </div>
   );
 };
-
-export default AuthForm;
