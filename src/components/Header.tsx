@@ -16,6 +16,7 @@ const Header = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuth();
 
@@ -29,8 +30,8 @@ const Header = () => {
   };
 
   const handleGetQuote = () => {
-    // Implement get quote logic here
-    alert('Get Quote clicked!');
+    setIsQuoteOpen(true);
+    setIsDropdownOpen(false);
   };
 
   useEffect(() => {
@@ -252,7 +253,7 @@ const Header = () => {
         </div>
       )}
 
-      <QuoteDialog />
+      <QuoteDialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen} />
     </header>
   );
 };
