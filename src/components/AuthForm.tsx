@@ -11,13 +11,13 @@ interface AuthFormProps {
 }
 
 export const AuthForm = ({ onClose }: AuthFormProps) => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const { signIn, signUp } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
@@ -46,11 +46,19 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
     }
   };
 
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setEmail('');
+    setPassword('');
+  };
+
   return (
     <div className="card-analog p-6 rounded-lg warm-glow">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="email" className="text-amber-200 text-serif">Email</Label>
+          <Label htmlFor="email" className="text-amber-200 text-serif">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -58,11 +66,14 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
             onChange={(e) => setEmail(e.target.value)}
             required
             className="glass-effect border-amber-500/40 bg-black/20 text-amber-100 focus:border-amber-400"
+            placeholder="Enter your email"
           />
         </div>
         
         <div>
-          <Label htmlFor="password" className="text-amber-200 text-serif">Password</Label>
+          <Label htmlFor="password" className="text-amber-200 text-serif">
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
@@ -70,6 +81,8 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
             onChange={(e) => setPassword(e.target.value)}
             required
             className="glass-effect border-amber-500/40 bg-black/20 text-amber-100 focus:border-amber-400"
+            placeholder="Enter your password"
+            minLength={6}
           />
         </div>
         
@@ -84,7 +97,7 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
         <div className="text-center">
           <button
             type="button"
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={toggleAuthMode}
             className="text-amber-300 hover:text-amber-400 transition-colors text-serif underline"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
