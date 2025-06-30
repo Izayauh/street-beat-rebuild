@@ -8,10 +8,6 @@ import Contact from '@/components/Contact';
 import QuoteDialog from '@/components/QuoteDialog';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface HeaderProps {
-  // No props for now
-}
-
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);

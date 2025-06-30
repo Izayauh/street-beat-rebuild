@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import PaymentForm from '@/components/PaymentForm';
+import SquarePaymentForm from '@/components/SquarePaymentForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,9 @@ const PAYMENT_PACKAGES = [
   }
 ];
 
+// Default Square location ID - you'll need to replace this with your actual location ID
+const SQUARE_LOCATION_ID = "main";
+
 const Payments = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const { user } = useAuth();
@@ -98,7 +101,7 @@ const Payments = () => {
           </h1>
           <p className="text-xl text-amber-200/80 mb-8 max-w-3xl mx-auto text-serif leading-relaxed">
             Choose from our flexible lesson packages or studio rental options. 
-            Secure payment processing with transparent pricing and no hidden fees.
+            Secure payment processing with Square and no hidden fees.
           </p>
         </div>
       </section>
@@ -229,9 +232,10 @@ const Payments = () => {
               
               {/* Payment Form */}
               <div className="card-analog p-8 rounded-2xl warm-glow">
-                <PaymentForm 
+                <SquarePaymentForm 
                   packageDetails={getSelectedPackageDetails()!}
                   userEmail={user?.email || ''}
+                  locationId={SQUARE_LOCATION_ID}
                 />
               </div>
             </div>
