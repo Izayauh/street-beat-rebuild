@@ -1,107 +1,75 @@
+// supabase/functions/create-payment/index.ts
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+// These imports are now cleanly resolved by the new deno.json file
+import { Client, Environment } from "square";
+import { v4 as uuidv4 } from "uuid";
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-interface CheckoutRequest {
-  amountCents: number;
-  description: string;
-  locationId: string;
-}
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[SQUARE-CHECKOUT] ${step}${detailsStr}`);
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    logStep("Square checkout started");
+    const { sourceId, amount, currency = 'USD', packageId, packageName, customerName, customerEmail } = await req.json();
 
-    const squareAccessToken = Deno.env.get("SQUARE_ACCESS_TOKEN");
-    
-    if (!squareAccessToken) {
-      throw new Error("Square access token not configured");
+    const accessToken = Deno.env.get('SQUARE_ACCESS_TOKEN');
+    const locationId = Deno.env.get('SQUARE_LOCATION_ID');
+
+    if (!accessToken || !locationId) {
+      throw new Error("Square credentials are not configured in Supabase function secrets.");
     }
 
-    logStep("Square credentials verified");
-
-    const { amountCents, description, locationId }: CheckoutRequest = await req.json();
-
-    logStep("Request data received", { amountCents, description, locationId });
-
-    // Generate idempotency key
-    const idempotencyKey = crypto.randomUUID();
-
-    // Create Square checkout request
-    const checkoutRequest = {
-      idempotency_key: idempotencyKey,
-      order: {
-        location_id: locationId,
-        line_items: [
-          {
-            name: description,
-            quantity: "1",
-            base_price_money: {
-              amount: amountCents,
-              currency: "USD"
-            }
-          }
-        ]
-      },
-      checkout_options: {
-        redirect_url: `${req.headers.get("origin")}/thank-you`
-      }
-    };
-
-    logStep("Checkout request prepared", { checkoutRequest });
-
-    const squareResponse = await fetch("https://connect.squareupsandbox.com/v2/online-checkout/payment-links", {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${squareAccessToken}`,
-        'Square-Version': '2025-06-18',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(checkoutRequest)
+    const squareClient = new Client({
+      environment: Environment.Sandbox,
+      accessToken,
     });
 
-    const squareData = await squareResponse.json();
-    logStep("Square API response", { status: squareResponse.status, data: squareData });
+    const { result } = await squareClient.paymentsApi.createPayment({
+      sourceId: sourceId,
+      locationId: locationId,
+      idempotencyKey: uuidv4(),
+      amountMoney: {
+        amount: BigInt(amount),
+        currency: currency,
+      },
+    });
 
-    if (!squareResponse.ok) {
-      logStep("Square API error", squareData);
-      return new Response(JSON.stringify(squareData), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: squareResponse.status,
-      });
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { error: dbError } = await supabaseAdmin.from('payments').insert({
+      square_payment_id: result.payment?.id,
+      amount: amount,
+      currency: currency,
+      status: result.payment?.status,
+      package_name: packageName,
+      customer_email: customerEmail,
+      customer_name: customerName,
+      package_id: packageId,
+    });
+
+    if (dbError) {
+      console.error("Database insert error:", dbError);
     }
 
-    logStep("Payment link created successfully", { url: squareData.payment_link?.url });
-
-    return new Response(JSON.stringify({ 
-      url: squareData.payment_link?.url 
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ success: true, payment: result }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in checkout processing", { message: errorMessage });
-    
-    return new Response(JSON.stringify({ 
-      error: errorMessage,
-      details: "Checkout processing failed. Please try again or contact support."
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.error("Error in create-payment function:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
   }

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "square": "npm:square@35.0.0",
+    "uuid": "npm:uuid@9.0.1"
+  }
+}
