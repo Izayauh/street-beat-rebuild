@@ -10,6 +10,19 @@ import { Music, Check, Star, Gift } from 'lucide-react';
 
 const PAYMENT_PACKAGES = [
   {
+    id: 'strings',
+    name: 'Guitar Strings',
+    price: 1,
+    description: 'Professional quality guitar strings',
+    features: [
+      'High-quality materials',
+      'Long-lasting durability',
+      'Bright, clear tone',
+      'Easy installation'
+    ],
+    popular: false
+  },
+  {
     id: 'single-session',
     name: 'Single Session',
     price: 75,
@@ -233,9 +246,6 @@ const Payments = () => {
               {/* Payment Form */}
               <div className="card-analog p-8 rounded-2xl warm-glow">
                 <SquarePaymentForm 
-                  packageDetails={getSelectedPackageDetails()!}
-                  userEmail={user?.email || ''}
-                  locationId={SQUARE_LOCATION_ID}
                   amount={getSelectedPackageDetails()!.price * 100}
                 />
               </div>
