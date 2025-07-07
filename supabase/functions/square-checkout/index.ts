@@ -1,75 +1,67 @@
-// supabase/functions/create-payment/index.ts
-
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-// These imports are now cleanly resolved by the new deno.json file
+import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { Client, Environment } from "square";
 import { v4 as uuidv4 } from "uuid";
-import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  // This is needed for CORS preflight requests.
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { sourceId, amount, currency = 'USD', packageId, packageName, customerName, customerEmail } = await req.json();
+    const { sourceId, amount } = await req.json();
 
-    const accessToken = Deno.env.get('SQUARE_ACCESS_TOKEN');
-    const locationId = Deno.env.get('SQUARE_LOCATION_ID');
+    // **HERE IS THE FIX**
+    // Retrieve secrets from the Supabase environment
+    const accessToken = Deno.env.get("SQUARE_ACCESS_TOKEN");
+    const locationId = Deno.env.get("SQUARE_LOCATION_ID");
 
+    // Check if the secrets were loaded correctly
     if (!accessToken || !locationId) {
-      throw new Error("Square credentials are not configured in Supabase function secrets.");
+      throw new Error("Missing Square credentials in environment variables.");
     }
 
-    const squareClient = new Client({
-      environment: Environment.Sandbox,
-      accessToken,
+    // Initialize the Square client
+    const client = new Client({
+      environment: Environment.Production, // Make sure this is set to Production
+      accessToken: accessToken,
     });
 
-    const { result } = await squareClient.paymentsApi.createPayment({
+    // Create the payment
+    const response = await client.paymentsApi.createPayment({
       sourceId: sourceId,
-      locationId: locationId,
       idempotencyKey: uuidv4(),
       amountMoney: {
-        amount: BigInt(amount),
-        currency: currency,
+        amount: BigInt(amount), // Ensure amount is a BigInt
+        currency: "USD",
       },
+      locationId: locationId,
     });
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { error: dbError } = await supabaseAdmin.from('payments').insert({
-      square_payment_id: result.payment?.id,
-      amount: amount,
-      currency: currency,
-      status: result.payment?.status,
-      package_name: packageName,
-      customer_email: customerEmail,
-      customer_name: customerName,
-      package_id: packageId,
-    });
-
-    if (dbError) {
-      console.error("Database insert error:", dbError);
-    }
-
-    return new Response(JSON.stringify({ success: true, payment: result }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Send the successful response back to your website
+    return new Response(JSON.stringify({
+      success: true,
+      payment: response.result.payment,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
 
   } catch (error) {
-    console.error("Error in create-payment function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Log the detailed error to the Supabase console
+    console.error("Detailed Error:", error);
+
+    // Send a generic error response back to the client
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
   }

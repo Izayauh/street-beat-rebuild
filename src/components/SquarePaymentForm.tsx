@@ -1,81 +1,104 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { CreditCard, User, Mail, Phone, MessageSquare, Loader2 } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface PackageDetails {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-}
-
+// Define the shape of the props the component will accept
 interface SquarePaymentFormProps {
-  packageDetails: PackageDetails;
-  userEmail: string;
-  locationId: string;
-  amount: number;
+  amount: number; // The amount in cents (e.g., $15.00 should be 1500)
 }
 
-const SquarePaymentForm = ({ packageDetails, userEmail, locationId, amount }: SquarePaymentFormProps) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: userEmail,
-    phone: '',
-    notes: ''
-  });
+// --- IMPORTANT: PASTE YOUR PUBLIC SQUARE IDS HERE ---
+
+// Find this on your Square Developer Dashboard -> Credentials page. It starts with 'sq0idp-'.
+const SQUARE_APP_ID = 'sq0idp-Udsxxarqi-r8qlF6rGMy6g'; 
+
+// Find this on your Square Developer Dashboard -> Locations page. It starts with 'L' or another letter.
+const SQUARE_LOCATION_ID = 'C1DTABC9HCV46';
+
+const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [card, setCard] = useState<any>(null);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  // This useEffect hook initializes the Square Web Payments SDK
+  useEffect(() => {
+    const initializeCard = async () => {
+      if (!(window as any).Square) {
+        const script = document.createElement('script');
+        script.src = 'https://web.squarecdn.com/v1/square.js';
+        script.async = true;
+        script.onload = () => initializeCard();
+        document.head.appendChild(script);
+        return;
+      }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+      try {
+        if (SQUARE_APP_ID.includes('REPLACE') || SQUARE_LOCATION_ID.includes('REPLACE')) {
+            toast.error('Square credentials are not configured in the code.');
+            console.error("Developer Error: Please replace the placeholder Square credentials in SquarePaymentForm.tsx");
+            return;
+        }
+
+        const payments = (window as any).Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+        const cardInstance = await payments.card();
+        await cardInstance.attach('#card-container');
+        setCard(cardInstance);
+      } catch (e) {
+        console.error('Initializing Square card failed', e);
+        toast.error('Failed to load payment form. Please refresh the page.');
+      }
+    };
+
+    initializeCard();
+  }, []);
+
+  // This function handles the form submission
+  const handlePayment = async (event: React.FormEvent) => {
+    event.preventDefault();
     
-    if (!formData.name || !formData.email) {
-      toast.error('Please fill in all required fields');
+    if (!card) {
+      toast.error('Payment form is not ready yet. Please wait a moment.');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Call Square payment processing function with correct parameters
+      // 1. Tokenize the card details to get a secure, one-time-use token
+      const tokenResult = await card.tokenize();
+      if (tokenResult.status !== 'OK') {
+        console.error('Tokenization error:', tokenResult.errors);
+        toast.error('Invalid card details. Please check your information.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const sourceId = tokenResult.token;
+
+      // 2. Call your Supabase function with the token and amount
       const { data, error } = await supabase.functions.invoke('process-square-payment', {
         body: {
+          sourceId: sourceId,
           amount: amount,
-          currency: 'USD',
-          packageId: packageDetails.id,
-          packageName: packageDetails.name,
-          customerName: formData.name,
-          customerEmail: formData.email,
-          customerPhone: formData.phone,
-          notes: formData.notes
-        }
+        },
       });
 
       if (error) {
         console.error('Square checkout error:', error);
-        toast.error('Payment processing failed. Please try again.');
+        toast.error('Payment failed. Please try again.');
+        setIsProcessing(false);
         return;
       }
 
-      if (data?.paymentUrl) {
-        // Redirect to Square checkout
-        window.location.href = data.paymentUrl;
-        toast.success('Redirecting to secure payment...');
-      } else {
-        toast.error('Payment setup failed. Please try again.');
-      }
+      // 3. Handle a successful payment
+      toast.success('Payment successful! Thank you for your purchase.');
+      navigate('/payment-success'); 
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('An unexpected error occurred:', error);
       toast.error('An error occurred. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -90,78 +113,18 @@ const SquarePaymentForm = ({ packageDetails, userEmail, locationId, amount }: Sq
           Payment Details
         </h3>
         <p className="text-amber-200/70 text-sm mt-2 text-serif">
-          Complete your information below to proceed with secure Square payment
+          Enter your card information below.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="name" className="text-amber-300 flex items-center gap-2 font-display">
-              <User className="w-4 h-4" />
-              Full Name *
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
-              placeholder="Enter your full name"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="email" className="text-amber-300 flex items-center gap-2 font-display">
-              <Mail className="w-4 h-4" />
-              Email Address *
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="phone" className="text-amber-300 flex items-center gap-2 font-display">
-            <Phone className="w-4 h-4" />
-            Phone Number
-          </Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
-            placeholder="(555) 123-4567"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="notes" className="text-amber-300 flex items-center gap-2 font-display">
-            <MessageSquare className="w-4 h-4" />
-            Additional Notes
-          </Label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => handleInputChange('notes', e.target.value)}
-            placeholder="Any special requests or preferences..."
-            className="bg-black/40 border-amber-500/30 text-amber-100 placeholder-amber-200/50 focus:border-amber-400 glass-effect"
-            rows={3}
-          />
-        </div>
-
+      <form onSubmit={handlePayment} className="space-y-6">
+        {/* This div is where the secure Square card form will be mounted */}
+        <div id="card-container"></div>
+        
         <div className="border-t border-amber-500/20 pt-6">
-          <Button 
-            type="submit" 
-            disabled={isProcessing}
+          <Button
+            type="submit"
+            disabled={isProcessing || !card}
             className="w-full btn-analog text-black py-3 text-lg disabled:opacity-50 transform hover:scale-105 transition-all duration-300"
           >
             {isProcessing ? (
@@ -172,17 +135,16 @@ const SquarePaymentForm = ({ packageDetails, userEmail, locationId, amount }: Sq
             ) : (
               <>
                 <CreditCard className="w-5 h-5 mr-2" />
-                Pay ${packageDetails.price} with Square
+                Pay ${(amount / 100).toFixed(2)}
               </>
             )}
           </Button>
         </div>
       </form>
-      
+
       <div className="mt-6 text-center text-amber-200/70 text-sm">
         <p className="text-serif">
-          Secure payment processing powered by Square. 
-          Your payment information is encrypted and protected.
+          Secure payment processing powered by Square.
         </p>
       </div>
     </div>
