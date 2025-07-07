@@ -235,6 +235,7 @@ const Payments = () => {
                   packageDetails={getSelectedPackageDetails()!}
                   userEmail={user?.email || ''}
                   locationId={SQUARE_LOCATION_ID}
+                  amount={getSelectedPackageDetails()!.price * 100}
                 />
               </div>
             </div>

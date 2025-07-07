@@ -19,9 +19,10 @@ interface SquarePaymentFormProps {
   packageDetails: PackageDetails;
   userEmail: string;
   locationId: string;
+  amount: number;
 }
 
-const SquarePaymentForm = ({ packageDetails, userEmail, locationId }: SquarePaymentFormProps) => {
+const SquarePaymentForm = ({ packageDetails, userEmail, locationId, amount }: SquarePaymentFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: userEmail,
@@ -48,7 +49,7 @@ const SquarePaymentForm = ({ packageDetails, userEmail, locationId }: SquarePaym
       // Call Square payment processing function with correct parameters
       const { data, error } = await supabase.functions.invoke('process-square-payment', {
         body: {
-          amount: packageDetails.price * 100, // Convert to cents
+          amount: amount,
           currency: 'USD',
           packageId: packageDetails.id,
           packageName: packageDetails.name,
