@@ -15,7 +15,7 @@ interface SquarePaymentFormProps {
 // Find this on your Square Developer Dashboard -> Credentials page. It starts with 'sq0idp-'.
 const SQUARE_APP_ID = 'sq0idp-Udsxxarqi-r8qlF6rGMy6g'; 
 
-// Find this on your Square Developer Dashboard -> Locations page. It starts with 'L' or another letter.
+// Find this on your Square Developer Dashboard -> Locations page. It starts with 'L'.
 const SQUARE_LOCATION_ID = 'C1DTABC9HCV46';
 
 const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
