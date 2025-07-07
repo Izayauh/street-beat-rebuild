@@ -89,7 +89,7 @@ const Header = () => {
         onClose={() => setIsContactOpen(false)}
         title="Contact Us"
       >
-        <Contact onClose={() => setIsContactOpen(false)} />
+        <Contact />
       </Modal>
 
       <QuoteDialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen} />

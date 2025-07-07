@@ -45,12 +45,17 @@ const SquarePaymentForm = ({ packageDetails, userEmail, locationId }: SquarePaym
     setIsProcessing(true);
 
     try {
-      // Call new Square checkout function
-      const { data, error } = await supabase.functions.invoke('square-checkout', {
+      // Call Square payment processing function with correct parameters
+      const { data, error } = await supabase.functions.invoke('process-square-payment', {
         body: {
-          amountCents: packageDetails.price * 100, // Convert to cents
-          description: `${packageDetails.name} - ${formData.name}`,
-          locationId: locationId
+          amount: packageDetails.price * 100, // Convert to cents
+          currency: 'USD',
+          packageId: packageDetails.id,
+          packageName: packageDetails.name,
+          customerName: formData.name,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          notes: formData.notes
         }
       });
 
@@ -60,9 +65,9 @@ const SquarePaymentForm = ({ packageDetails, userEmail, locationId }: SquarePaym
         return;
       }
 
-      if (data?.url) {
+      if (data?.paymentUrl) {
         // Redirect to Square checkout
-        window.location.href = data.url;
+        window.location.href = data.paymentUrl;
         toast.success('Redirecting to secure payment...');
       } else {
         toast.error('Payment setup failed. Please try again.');
