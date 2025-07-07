@@ -68,7 +68,8 @@ const PAYMENT_PACKAGES = [
 ];
 
 // Updated with your actual Square location ID
-const SQUARE_LOCATION_ID = "LN9XH2MKEJKSF";
+const SQUARE_LOCATION_ID = "C1DTABC9HCV46";
+const SQUARE_APP_ID = "sq0idp-Udsxxarqi-r8qlF6rGMy6g";
 
 const Payments = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
