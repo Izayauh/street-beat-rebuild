@@ -8,7 +8,12 @@ const corsHeaders = {
 };
 
 const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  let detailsStr = '';
+  if (details) {
+    // Use a replacer function to convert BigInts to strings for serialization
+    detailsStr = ` - ${JSON.stringify(details, (_, value) => typeof value === 'bigint' ? value.toString() : value)}`;
+  }
+
   console.log(`[SQUARE-PAYMENT] ${step}${detailsStr}`);
 };
 
@@ -20,12 +25,11 @@ serve(async (req) => {
   try {
     logStep("Payment processing started");
 
-    const squareAccessToken = Deno.env.get("SQUARE_SANDBOX_ACCESS_TOKEN");
-    const squareApplicationId = Deno.env.get("SQUARE_SANDBOX_APPLICATION_ID");
+    const squareAccessToken = Deno.env.get("SQUARE_ACCESS_TOKEN");
     const squareEnvironment = "sandbox"; // Change to "production" for live payments
 
-    if (!squareAccessToken || !squareApplicationId) {
-      throw new Error("Square credentials not configured");
+    if (!squareAccessToken) {
+      throw new Error("Square access token not configured");
     }
 
     logStep("Square credentials verified");

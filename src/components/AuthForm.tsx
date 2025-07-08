@@ -10,7 +10,7 @@ interface AuthFormProps {
   onClose?: () => void;
 }
 
-export const AuthForm = ({ onClose }: AuthFormProps) => {
+export const AuthForm = ({ onClose }: AuthFormProps) => {;
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -41,6 +41,28 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast.info('Please enter your email address to reset your password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Assume sendPasswordResetEmail is available in useAuth
+      const { error } = await useAuth().sendPasswordResetEmail(email);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Password reset email sent. Please check your inbox.');
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred while sending reset email.');
     } finally {
       setLoading(false);
     }
@@ -85,6 +107,17 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {
             minLength={6}
           />
         </div>
+
+        {isLogin && (
+          <div className="text-right text-sm">
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              className="text-amber-300 hover:text-amber-400 transition-colors text-serif underline">
+              Forgot Password?
+            </button>
+          </div>
+        )}
         
         <Button
           type="submit"
