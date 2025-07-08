@@ -16,24 +16,43 @@ serve(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: CORS_HEADERS });
     }
-
-    const { email, token } = await req.json();
+    
+    let email, token;
+    try {
+      ({ email, token } = await req.json());
+    } catch (jsonError) {
+      console.error("Error parsing request body:", jsonError);
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        headers: { "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
 
     const siteUrl = new URL(req.url).origin;
     const resetLink = `${siteUrl}/reset-password?token=${token}`;
-    const emailHtml = render(ResetPasswordEmail({ resetLink }));
+
+    let emailHtml;
+    try {
+      emailHtml = render(ResetPasswordEmail({ resetLink }));
+    } catch (renderError) {
+      console.error("Error rendering email template:", renderError);
+      return new Response(JSON.stringify({ error: "Failed to render email template" }), {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
 
     await resend.emails.send({
       from: 'Your Verified Email <onboarding@resend.dev>', // Replace with your verified domain and name
       to: email,
       subject: 'Reset Your Password',
       html: emailHtml,
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { "Content-Type": "application/json" },
-      status: 400,
+    }).catch((sendError) => {
+      console.error("Error sending email with Resend:", sendError);
+      return new Response(JSON.stringify({ error: "Failed to send password reset email" }), {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      });
     });
   }
-});
+});;
