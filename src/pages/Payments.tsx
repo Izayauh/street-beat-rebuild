@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SquarePaymentForm from '@/components/SquarePaymentForm';
+import OrderSummary from '@/components/OrderSummary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -206,42 +207,11 @@ const Payments = () => {
             
             <div className="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
               {/* Order Summary */}
-              <div className="card-analog p-8 rounded-2xl warm-glow">
-                <h3 className="text-amber-400 text-2xl font-display warm-text-glow mb-6">Order Summary</h3>
-                {getSelectedPackageDetails() && (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-amber-300 text-lg font-display">
-                          {getSelectedPackageDetails()!.name}
-                        </h4>
-                        <p className="text-amber-200/70 text-sm text-serif">
-                          {getSelectedPackageDetails()!.description}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {getSelectedPackageDetails()!.originalPrice && (
-                          <span className="text-amber-200/50 text-sm line-through block">
-                            ${getSelectedPackageDetails()!.originalPrice}
-                          </span>
-                        )}
-                        <span className="text-amber-300 text-xl font-bold">
-                          ${getSelectedPackageDetails()!.price}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="border-t border-amber-500/20 pt-4">
-                      <div className="flex justify-between items-center text-lg">
-                        <span className="text-amber-400 font-display">Total</span>
-                        <span className="text-amber-300 font-bold">
-                          ${getSelectedPackageDetails()!.price}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {getSelectedPackageDetails() && (
+                <OrderSummary 
+                  packageDetails={getSelectedPackageDetails()!} 
+                />
+              )}
               
               {/* Payment Form */}
               <div className="card-analog p-8 rounded-2xl warm-glow">

@@ -17,6 +17,9 @@ interface ContactEmailRequest {
   email: string;
   service?: string;
   message?: string;
+  // Added for payment confirmations
+  packageName?: string;
+  amount?: number; // Amount in the smallest currency unit (e.g., cents)
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -45,8 +48,16 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('No request body provided');
     }
 
-    const { name, email, service, message }: ContactEmailRequest = JSON.parse(requestBody);
-    console.log('Parsed data:', { name, email, service, message });
+    const { name, email, service, message, packageName, amount }: ContactEmailRequest = JSON.parse(requestBody);
+    console.log('Parsed data:', { name, email, service, message, packageName, amount });
+
+    let emailSubject = "🎵 Let's Make Music Together - Your Message Has Been Received!";
+    let emailBodyProps: any = { name, service, message };
+
+    if (packageName && amount !== undefined) {
+      emailSubject = `🎶 Payment Confirmation for ${packageName}`;
+      emailBodyProps = { name, packageName, amount };
+    }
 
     // Check if we have the required fields
     if (!name || !email) {
@@ -63,13 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Rendering React Email template...');
     
     // Render the React Email template
-    const emailHtml = await renderAsync(
-      React.createElement(ConfirmationEmail, {
-        name,
-        service,
-        message,
-      })
-    );
+    const emailHtml = await renderAsync(React.createElement(ConfirmationEmail, emailBodyProps));
 
     console.log('React Email template rendered successfully');
     console.log('Sending email to:', email);
@@ -77,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResult = await resend.emails.send({
       from: "3rd Street Music <onboarding@resend.dev>", // Using resend's test domain
       to: [email],
-      subject: "🎵 Let's Make Music Together - Your Message Has Been Received!",
+      subject: emailSubject,
       html: emailHtml,
     });
 

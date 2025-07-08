@@ -20,6 +20,8 @@ interface ConfirmationEmailProps {
   name: string
   service?: string
   message?: string
+  packageName?: string
+  amount?: number // Amount in the smallest currency unit (e.g., cents)
 }
 
 export const ConfirmationEmail = ({
@@ -27,6 +29,7 @@ export const ConfirmationEmail = ({
   service,
   message,
 }: ConfirmationEmailProps) => (
+
   <Html>
     <Head />
     <Preview>🎵 Let's Make Music Together - Your Message Has Been Received!</Preview>
@@ -47,6 +50,22 @@ export const ConfirmationEmail = ({
         {/* Main Content */}
         <Section style={content}>
           <Heading style={h1}>Hey {name}! 👋</Heading>
+
+          {packageName && amount !== undefined && (
+            <>
+              <Text style={greeting}>
+                Thank you for your recent purchase from 3rd Street Music! We're thrilled you chose us for your musical needs.
+              </Text>
+              <Section style={serviceSection}>
+                <Text style={serviceTitle}>Purchase Summary:</Text>
+                <Text style={serviceText}>
+                  Package: {packageName}
+                  <br />
+                  Amount: ${ (amount / 100).toFixed(2) } {/* Convert cents to dollars */}
+                </Text>
+              </Section>
+            </>
+          )}
           
           <Text style={greeting}>
             We're absolutely stoked that you reached out to us! Your message just landed in our inbox, 

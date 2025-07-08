@@ -4,21 +4,35 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
+// Define the shape of the billing information
+interface BillingInfo {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+}
 // Define the shape of the props the component will accept
 interface SquarePaymentFormProps {
   amount: number; // The amount in cents (e.g., $15.00 should be 1500)
+  packageName: string; // The name of the package being purchased
+  billingInfo: BillingInfo; // Add billing info prop
+  email: string; // Add email prop
 }
 
 // --- IMPORTANT: PASTE YOUR PUBLIC SQUARE IDS HERE ---
 
-// Find this on your Square Developer Dashboard -> Credentials page. It starts with 'sq0idp-'.
-const SQUARE_APP_ID = 'sq0idp-Udsxxarqi-r8qlF6rGMy6g'; 
+// Find this on your Square Developer Dashboard -> Credentials page. It starts with 'sq0idp-\'.
+const SQUARE_APP_ID = 'sq0idp-Udsxxarqi-r8qlF6rGMy6g';
 
 // Find this on your Square Developer Dashboard -> Locations page. It starts with 'L'.
 const SQUARE_LOCATION_ID = 'C1DTABC9HCV46';
 
-const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
+const SquarePaymentForm = ({ amount, packageName, billingInfo, email }: SquarePaymentFormProps) => {
+  const { user } = useAuth(); // Use the useAuth hook
+
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [card, setCard] = useState<any>(null);
@@ -55,10 +69,11 @@ const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
     initializeCard();
   }, []);
 
+
   // This function handles the form submission
   const handlePayment = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!card) {
       toast.error('Payment form is not ready yet. Please wait a moment.');
       return;
@@ -83,6 +98,10 @@ const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
         body: {
           sourceId: sourceId,
           amount: amount,
+          email: email, // Add email to the body
+          packageName: packageName,
+          billingInfo: billingInfo, // Add billing info to the body
+          currency: "USD", // Add currency here
         },
       });
 
@@ -95,7 +114,7 @@ const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
 
       // 3. Handle a successful payment
       toast.success('Payment successful! Thank you for your purchase.');
-      navigate('/payment-success'); 
+      navigate('/payment-success');
 
     } catch (error) {
       console.error('An unexpected error occurred:', error);
@@ -108,6 +127,7 @@ const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
   return (
     <div>
       <div className="mb-6">
+
         <h3 className="text-amber-400 text-2xl font-display warm-text-glow flex items-center gap-2">
           <CreditCard className="w-6 h-6" />
           Payment Details
@@ -120,7 +140,7 @@ const SquarePaymentForm = ({ amount }: SquarePaymentFormProps) => {
       <form onSubmit={handlePayment} className="space-y-6">
         {/* This div is where the secure Square card form will be mounted */}
         <div id="card-container"></div>
-        
+
         <div className="border-t border-amber-500/20 pt-6">
           <Button
             type="submit"
