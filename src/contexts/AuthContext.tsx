@@ -78,11 +78,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sendPasswordResetEmail = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`, // Or the desired reset page URL
+    // First, call Supabase to generate the token
+    const { data, error: generateTokenError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
-    return { error };
+    if (generateTokenError) {
+      console.error("Error generating password reset token:", generateTokenError);
+      return { error: generateTokenError };
+    }
+
+    // Now, call the Edge Function to send the email with the token
+    const { error: sendEmailError } = await supabase.functions.invoke('send-password-reset', {
+      body: { email, token: data?.properties?.email_change_token_new },
+    });
+
+    if (sendEmailError) {
+      console.error("Error sending password reset email:", sendEmailError);
+      return { error: sendEmailError };
+    }
+
+    return { error: null }; // Indicate success if both steps pass
   };
 
   const value = {
