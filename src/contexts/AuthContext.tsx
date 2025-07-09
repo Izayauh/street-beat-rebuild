@@ -4,26 +4,36 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
-  sendPasswordResetEmail: (email: string) => Promise<{ error: any }>;
-}
+ user: User | null;
+ session: Session | null;
+ loading: boolean;
+ signUp: (email: string, password: string) => Promise<{
+ error: any | null;
+ data: any | null;
+ }>;
+ signIn: (email: string, password: string) => Promise<{
+ error: any | null;
+ data: any | null;
+ }>;
+ signOut: () => Promise<void>;
+ sendPasswordResetEmail: (email: string) => Promise<{
+ error: any | null;
+ data: any | null;
+ }>;
+ resetPassword: (newPassword: string) => Promise<{
+ error: any | null;
+ data: any | null;
+ }>;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const supabase = createClient(
+ process.env.NEXT_PUBLIC_SUPABASE_URL!,
+ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
