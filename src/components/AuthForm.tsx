@@ -47,6 +47,7 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
   };
 
   const handlePasswordReset = async () => {
+    console.log('Attempting password reset...');
     if (!email) {
       toast.info('Please enter your email address to reset your password.');
       return;
@@ -55,7 +56,9 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
     setLoading(true);
     try {
       // Assume sendPasswordResetEmail is available in useAuth
+      console.log('Calling useAuth().sendPasswordResetEmail...');
       const { error } = await useAuth().sendPasswordResetEmail(email);
+ console.log('After sendPasswordResetEmail call...', error);
       if (error) {
         toast.error(error.message);
       } else {

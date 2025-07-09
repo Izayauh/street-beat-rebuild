@@ -78,7 +78,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sendPasswordResetEmail = async (email: string) => {
-    // First, call Supabase to generate the token
+    console.log('Attempting to send password reset email for:', email);
+    
+    // Step 1: Call Supabase to generate the token
     const { data, error: generateTokenError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
@@ -88,17 +90,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: generateTokenError };
     }
 
-    // Now, call the Edge Function to send the email with the token
+    // Step 2: Call the Edge Function to send the email with the token
     const { error: sendEmailError } = await supabase.functions.invoke('send-password-reset', {
       body: { email, token: data?.properties?.email_change_token_new },
     });
 
-    if (sendEmailError) {
-      console.error("Error sending password reset email:", sendEmailError);
-      return { error: sendEmailError };
-    }
-
-    return { error: null }; // Indicate success if both steps pass
+    // Return the error from the email sending step, or null if successful
+    return { error: sendEmailError };
   };
 
   const value = {
