@@ -17,21 +17,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Create a provider component
-interface AuthProviderProps {
-  children: ReactNode;
-  supabaseUrl: string;
-  supabaseAnonKey: string;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ 
-  children, 
-  supabaseUrl, 
-  supabaseAnonKey 
-}) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [supabase] = useState<SupabaseClient>(() => 
-    createClient(supabaseUrl, supabaseAnonKey)
+    createClient(import.meta.env.VITE_SUPABASE_URL!, import.meta.env.VITE_SUPABASE_ANON_KEY!)
   );
 
   useEffect(() => {
@@ -78,11 +68,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       // If sign up is successful, send a custom welcome email
       if (!error) {
         try {
-          await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseAnonKey}`
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
             },
             body: JSON.stringify({
               templateName: 'welcome',
@@ -133,11 +123,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const sendPasswordResetEmail = async (email: string) => {
     try {
       // Use our custom Edge Function for password reset
-      const response = await fetch(`${supabaseUrl}/functions/v1/handle-password-reset`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-password-reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({ email }),
       });
@@ -164,11 +154,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       // If password reset is successful, send a confirmation email
       if (!error && user?.email) {
         try {
-          await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseAnonKey}`
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
             },
             body: JSON.stringify({
               templateName: 'password-changed',

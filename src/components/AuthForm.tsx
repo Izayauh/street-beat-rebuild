@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface AuthFormProps {
@@ -15,7 +16,8 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp } = useAuth(); // Keep signIn and signUp
+  const navigate = useNavigate(); // Get the navigate function
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,31 +43,6 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordReset = async () => {
-    console.log('Attempting password reset...');
-    if (!email) {
-      toast.info('Please enter your email address to reset your password.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Assume sendPasswordResetEmail is available in useAuth
-      console.log('Calling useAuth().sendPasswordResetEmail...');
-      const { error } = await useAuth().sendPasswordResetEmail(email);
- console.log('After sendPasswordResetEmail call...', error);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Password reset email sent. Please check your inbox.');
-      }
-    } catch (error) {
-      toast.error('An unexpected error occurred while sending reset email.');
     } finally {
       setLoading(false);
     }
@@ -115,7 +92,7 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
           <div className="text-right text-sm">
             <button
               type="button"
-              onClick={handlePasswordReset}
+              onClick={() => navigate('/auth/forgot-password')} // Navigate to the new page
               className="text-amber-300 hover:text-amber-400 transition-colors text-serif underline">
               Forgot Password?
             </button>

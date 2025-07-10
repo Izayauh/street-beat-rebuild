@@ -43,7 +43,7 @@ serve(async (req) => {
     }
 
     await resend.emails.send({
-      from: 'Your Verified Email <onboarding@resend.dev>', // Replace with your verified domain and name
+ from: 'Your App <no-reply@yourdomain.com>', // Replace with your verified domain and name
       to: email,
       subject: 'Reset Your Password',
       html: emailHtml,
