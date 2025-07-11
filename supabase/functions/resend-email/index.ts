@@ -1,6 +1,8 @@
-import { Resend } from 'npm:resend@2.0.0';
-import { renderAsync } from "npm:@react-email/render@0.0.12";
-import React from "npm:react@18.3.1";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "resend";
+import { render } from "@react-email/render";
+import React from "react";
+import { WelcomeEmail } from "./_templates/welcome-email.tsx";
 
 // Initialize Resend with your API key from Supabase secrets
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -53,7 +55,7 @@ Deno.serve(async (req) => {
     // Dynamically import and render the correct React component
     const templateModule = await EMAIL_TEMPLATES[template]();
     const EmailComponent = templateModule.default;
-    const emailHtml = await renderAsync(React.createElement(EmailComponent, data));
+    const emailHtml = await render(React.createElement(EmailComponent, data));
 
     // Send the email using Resend
     const { data: resendData, error } = await resend.emails.send({

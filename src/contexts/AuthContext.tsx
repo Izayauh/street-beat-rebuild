@@ -54,47 +54,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [supabase]);
 
-  // Sign up with email and password
-  const signUp = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/verify`,
-        },
-      });
+ // Sign up with email and password
+ const signUp = async (email: string, password: string) => {
+  try {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // This tells Supabase where to redirect the user after they click the verification link
+        emailRedirectTo: `${window.location.origin}/confirm`,
+      },
+    });
 
-      // If sign up is successful, send a custom welcome email
-      if (!error) {
-        try {
-          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({
-              templateName: 'welcome',
-              email,
-              data: {
-                username: email.split('@')[0],
-                verificationLink: `${window.location.origin}/auth/verify`,
-              },
-            }),
-          });
-        } catch (emailError) {
-          console.error('Error sending custom welcome email:', emailError);
-          // Continue even if custom email fails - Supabase will still send its default email
-        }
+    // If the Supabase sign-up was successful, call our email function
+    if (!error) {
+      console.log('Sign-up successful. Triggering welcome email...');
+      try {
+        await supabase.functions.invoke('resend-email', { // Use the correct function name
+          body: {
+            template: 'welcome', // The key from our template map in index.ts
+            to: email,
+            subject: 'Welcome to 3rd Street Music!',
+            data: { // The props for our React component
+              name: email.split('@')[0], // A simple username from the email
+              actionUrl: `${window.location.origin}/confirm` // The verification link
+            }
+          }
+        });
+        console.log('Welcome email function invoked successfully.');
+      } catch (emailError) {
+          console.error('Error invoking welcome email function:', emailError);
+          // We don't throw an error here because the user account was still created.
+          // This just means our custom email failed, but Supabase's default might still go out.
       }
-
-      return { error };
-    } catch (error) {
-      console.error('Error signing up:', error);
-      return { error: error as AuthError };
     }
-  };
+
+    return { error };
+  } catch (error) {
+    console.error('Error during sign up process:', error);
+    return { error: error as AuthError };
+  }
+};
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
