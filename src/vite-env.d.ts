@@ -1,1 +1,8 @@
-/// <reference types="vite/client" />
+{
+    "imports": {
+      "react": "npm:react@18.3.1",
+      "@react-email/components": "npm:@react-email/components@0.0.22",
+      "@react-email/render": "npm:@react-email/render@0.0.16",
+      "resend": "npm:resend@3.4.0"
+    }
+  }
