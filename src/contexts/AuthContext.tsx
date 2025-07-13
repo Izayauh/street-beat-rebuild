@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const sendPasswordResetEmail = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: 'https://street-beat-rebuild.vercel.app/auth/reset-password'
       });
       if (error) {
         return { error };
