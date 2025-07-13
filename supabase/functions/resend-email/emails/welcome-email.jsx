@@ -1,5 +1,5 @@
-import React from "react";
-import { Html, Head, Body, Container, Text, Button, Preview, Section } from "@react-email/components";
+import React from "npm:react@18.3.1";
+import { Html, Head, Body, Container, Text, Button, Preview, Section } from "npm:@react-email/components@0.0.22";
 
 const WelcomeEmail = ({ username, verificationLink }) => (
   <Html>
