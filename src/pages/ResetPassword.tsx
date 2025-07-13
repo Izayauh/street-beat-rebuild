@@ -1,24 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 
 const ResetPassword = () => {
-  // Assuming 'supabase' client is imported from your integrations
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const token = searchParams.get('token');
-  const type = searchParams.get('type'); // Supabase often includes a type
+  useEffect(() => {
+    // 1. Check for token in the hash fragment (Implicit flow)
+    const hash = location.hash.substring(1);
+    const hashParams = new URLSearchParams(hash);
+    const accessToken = hashParams.get('access_token');
+    const hashType = hashParams.get('type');
+
+    if (accessToken) {
+      setToken(accessToken);
+      setType(hashType);
+    } else {
+      // 2. Fallback to checking the query string (PKCE flow)
+      const queryParams = new URLSearchParams(location.search);
+      const queryToken = queryParams.get('token');
+      const queryType = queryParams.get('type');
+      setToken(queryToken);
+      setType(queryType);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (!token || type !== 'recovery') {
       setError('Invalid or missing reset token.');
       // Optionally redirect after a delay
       // setTimeout(() => navigate('/auth'), 3000);
+    } else {
+      setError(null);
     }
   }, [token, type, navigate]);
 
@@ -33,8 +53,8 @@ const ResetPassword = () => {
     }
 
     if (!token) {
-        setError('Reset token is missing.');
-        return;
+      setError('Reset token is missing.');
+      return;
     }
 
     // Use the token as the accessToken for the password reset
@@ -52,15 +72,15 @@ const ResetPassword = () => {
   };
 
   if (error && error !== 'Invalid or missing reset token.') {
-      return <div className="text-red-500 text-center mt-8">{error}</div>;
+    return <div className="text-red-500 text-center mt-8">{error}</div>;
   }
 
   if (message) {
-      return <div className="text-green-500 text-center mt-8">{message}</div>;
+    return <div className="text-green-500 text-center mt-8">{message}</div>;
   }
-  
+
   if (!token || type !== 'recovery') {
-      return <div className="text-red-500 text-center mt-8">Invalid or missing reset token. Redirecting...</div>;
+    return <div className="text-red-500 text-center mt-8">Invalid or missing reset token. Redirecting...</div>;
   }
 
   return (
