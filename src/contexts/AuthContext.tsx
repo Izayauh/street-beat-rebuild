@@ -122,14 +122,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Send password reset email
   const sendPasswordResetEmail = async (email: string) => {
     try {
-      const resetLink = `${window.location.origin}/auth/reset-password?email=${encodeURIComponent(email)}`;
-      const { data, error } = await supabase.functions.invoke('resend-email', {
-        body: {
-          template: 'password-reset',
-          to: email,
-          subject: 'Password Reset Request',
-          data: { resetLink }
-        }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`
       });
       if (error) {
         return { error };
