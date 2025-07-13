@@ -9,7 +9,16 @@ const ForgotPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke('send-password-reset', { body: { email } });
+    // Construct the reset link (assuming your reset page is /auth/reset-password)
+    const resetLink = `${window.location.origin}/auth/reset-password?email=${encodeURIComponent(email)}`;
+    const { data, error } = await supabase.functions.invoke('resend-email', {
+      body: {
+        template: 'password-reset',
+        to: email,
+        subject: 'Password Reset Request',
+        data: { resetLink }
+      }
+    });
     setLoading(false);
 
     if (error) {
