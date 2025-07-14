@@ -1,7 +1,7 @@
 import React from "npm:react@18.3.1";
 import { Html, Head, Body, Container, Text, Button, Preview, Section } from "npm:@react-email/components@0.0.22";
 
-const PasswordResetEmail = ({ username = "User", resetLink }) => (
+const PasswordResetEmail = ({ username = "User", redirectTo }) => (
   <Html>
     <Head />
     <Preview>Password Reset Request</Preview>
@@ -18,7 +18,7 @@ const PasswordResetEmail = ({ username = "User", resetLink }) => (
             We received a request to reset your password. Click the button below to set a new password for your account.
           </Text>
           <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button style={ctaButton} href={resetLink}>
+            <Button style={ctaButton} href={redirectTo}>
               Reset Password
             </Button>
           </Section>
@@ -99,4 +99,4 @@ const footerText = {
   color: '#6B7280',
   textAlign: 'center',
   margin: '0',
-}; 
+};

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../integrations/supabase/client';
+import { sendEmail } from '../utils/emailService';
 import { toast } from '../components/ui/use-toast';
 
 const ForgotPassword = () => {
@@ -9,17 +9,26 @@ const ForgotPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://street-beat-rebuild.vercel.app/auth/reset-password'
-    });
-    setLoading(false);
 
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
+    const redirectTo = `${window.location.origin}/auth/reset-password`;
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: 'Password Reset',
+        template: 'password-reset',
+        data: {
+          redirectTo: redirectTo,
+        },
+      });
       toast({ title: 'Success', description: 'Check your email for the password reset link.', variant: 'default' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to send password reset email.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
