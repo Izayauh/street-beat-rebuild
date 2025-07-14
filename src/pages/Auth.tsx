@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,6 +158,13 @@ const Auth = () => {
               }
             </button>
           </div>
+            {!isSignUp && (
+                <div className="mt-4 text-center">
+                <Link to="/password-reset" className="text-sm text-gray-400 hover:text-white transition-colors">
+                    Forgot your password?
+                </Link>
+                </div>
+            )}
         </div>
       </div>
     </div>

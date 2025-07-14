@@ -4,7 +4,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@3.4.0";
 import { render } from "npm:@react-email/render@0.0.16";
 import React from "npm:react@18.3.1";
-import { Html, Head, Body, Container, Text, Button, Preview, Section } from "npm:@react-email/components@0.0.22";
+import WelcomeEmail from "./emails/welcome-email.jsx";
 
 // Template Map
 const EMAIL_TEMPLATES = {
@@ -15,7 +15,7 @@ const EMAIL_TEMPLATES = {
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 // Main Function Handler
-Deno.serve(async (req) => {
+serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
