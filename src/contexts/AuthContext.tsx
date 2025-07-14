@@ -122,21 +122,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Send password reset email
   const sendPasswordResetEmail = async (email: string) => {
     try {
-      // Use our custom Edge Function for password reset
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-password-reset`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ email }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://street-beat-rebuild.vercel.app/auth/reset-password'
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        return { error: { message: errorData.message } as AuthError };
+      if (error) {
+        return { error };
       }
-
       return { error: null };
     } catch (error) {
       console.error('Error sending password reset email:', error);

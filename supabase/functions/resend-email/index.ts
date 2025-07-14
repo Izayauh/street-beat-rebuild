@@ -4,11 +4,14 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@3.4.0";
 import { render } from "npm:@react-email/render@0.0.16";
 import React from "npm:react@18.3.1";
+import { Html, Head, Body, Container, Text, Button, Preview, Section } from "npm:@react-email/components@0.0.22";
+import PasswordResetEmail from "./emails/password-reset-email.jsx";
 import WelcomeEmail from "./emails/welcome-email.jsx";
 
 // Template Map
 const EMAIL_TEMPLATES = {
   'welcome': WelcomeEmail,
+  'password-reset': PasswordResetEmail,
 };
 
 // Initialize Resend

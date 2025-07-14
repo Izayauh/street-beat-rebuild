@@ -1,40 +1,42 @@
 import React from "npm:react@18.3.1";
 import { Html, Head, Body, Container, Text, Button, Preview, Section } from "npm:@react-email/components@0.0.22";
 
-const WelcomeEmail = ({ username, verificationLink }) => (
+const PasswordResetEmail = ({ username = "User", resetLink }) => (
   <Html>
     <Head />
-    <Preview>Welcome to 3rd Street Music!</Preview>
+    <Preview>Password Reset Request</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
-            <Text style={logoText}>🎵 3rd Street Music</Text>
+          <Text style={logoText}>🎵 3rd Street Music</Text>
         </Section>
         <Section style={content}>
-          <Text style={h1}>Welcome to the Band, {username}!</Text>
+          <Text style={h1}>Reset Your Password</Text>
           <Text style={paragraph}>
-            We're thrilled to have you join our community of musicians and creators. To get started and secure your account, please verify your email address.
+            Hi {username},
+            <br />
+            We received a request to reset your password. Click the button below to set a new password for your account.
           </Text>
           <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button style={ctaButton} href={verificationLink}>
-              Verify Your Email
+            <Button style={ctaButton} href={resetLink}>
+              Reset Password
             </Button>
           </Section>
           <Text style={paragraph}>
-            Once verified, you'll be able to book studio time, schedule lessons, and get personalized quotes for your projects.
+            If you did not request a password reset, you can safely ignore this email.
           </Text>
         </Section>
         <Section style={footer}>
-            <Text style={footerText}>
-              If you didn't create this account, you can safely ignore this email.
-            </Text>
+          <Text style={footerText}>
+            For help, contact support@3rdstreetmusic.com
+          </Text>
         </Section>
       </Container>
     </Body>
   </Html>
 );
 
-export default WelcomeEmail;
+export default PasswordResetEmail;
 
 // --- Styles ---
 const main = {
@@ -97,4 +99,4 @@ const footerText = {
   color: '#6B7280',
   textAlign: 'center',
   margin: '0',
-};
+}; 
