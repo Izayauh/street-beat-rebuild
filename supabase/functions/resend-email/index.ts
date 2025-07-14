@@ -38,9 +38,9 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Parsing request body...");
     const { to, subject, template, data = {} } = await req.json();
-    console.log(`Request parsed: to=${to}, subject=${subject}, template=${template}`);
+    console.log(`[DEBUG] Request Body: to=${to}, subject=${subject}, template=${template}`);
+
 
     if (!RESEND_API_KEY) {
       throw new Error("Server configuration error: RESEND_API_KEY is not set.");
@@ -51,34 +51,35 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-
     const EmailComponent = EMAIL_TEMPLATES[template];
     if (!EmailComponent) {
       console.error(`Template not found: "${template}"`);
       throw new Error(`Template "${template}" not found.`);
     }
-    console.log("Email template found.");
     
-    // Prepare props for the email component
     let emailProps = data;
     if (template === 'password-reset') {
-      const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: to,
         options: {
-          redirectTo: data.redirectTo
+          redirectTo: 'https://street-beat-rebuild.vercel.app/auth/reset-password'
         }
       });
-      if(error){
-        throw error
+      
+      if(linkError){
+        throw linkError;
       }
-      emailProps = { ...data, redirectTo: linkData.properties.action_link };
+      
+      const resetUrl = linkData?.properties?.action_link;
+      if (!resetUrl) {
+        throw new Error("Failed to generate password reset URL.");
+      }
+
+      emailProps = { ...data, redirectTo: resetUrl };
     }
 
-
-    console.log("Rendering email HTML...");
     const emailHtml = render(React.createElement(EmailComponent, emailProps));
-    console.log("Email HTML rendered successfully.");
 
     console.log("Sending email via Resend...");
     const { data: resendData, error } = await resend.emails.send({

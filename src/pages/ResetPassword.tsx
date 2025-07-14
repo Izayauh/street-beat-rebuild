@@ -1,132 +1,126 @@
+// src/pages/ResetPassword.tsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 const ResetPassword = () => {
-  const [token, setToken] = useState<string | null>(null);
-  const [type, setType] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Check for token in the hash fragment (Implicit flow)
-    const hash = location.hash.substring(1);
-    const hashParams = new URLSearchParams(hash);
-    const accessToken = hashParams.get('access_token');
-    const hashType = hashParams.get('type');
+    // This listener handles the session recovery from the password reset link
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setSession(session);
+      }
+    });
 
-    if (accessToken) {
-      setToken(accessToken);
-      setType(hashType);
-    } else {
-      // 2. Fallback to checking the query string (PKCE flow)
-      const queryParams = new URLSearchParams(location.search);
-      const queryToken = queryParams.get('token');
-      const queryType = queryParams.get('type');
-      setToken(queryToken);
-      setType(queryType);
-    }
-  }, [location]);
-
-  useEffect(() => {
-    if (!token || type !== 'recovery') {
-      setError('Invalid or missing reset token.');
-      // Optionally redirect after a delay
-      // setTimeout(() => navigate('/auth'), 3000);
-    } else {
-      setError(null);
-    }
-  }, [token, type, navigate]);
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setMessage(null);
+    setLoading(true);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      setLoading(false);
       return;
     }
 
-    if (!token) {
-      setError('Reset token is missing.');
+    if (!session) {
+      setError('Authentication session not found. Please return to the password reset link.');
+      setLoading(false);
       return;
     }
 
-    // Use the token as the accessToken for the password reset
-    const { error: resetError } = await supabase.auth.updateUser(
-      { password: password },
-      { accessToken: token }
-    );
+    // With a valid session from PASSWORD_RECOVERY, we can update the user's password
+    const { error: updateError } = await supabase.auth.updateUser({ password });
 
-    if (resetError) {
-      setError(resetError.message);
+    setLoading(false);
+
+    if (updateError) {
+      setError(`Error updating password: ${updateError.message}`);
     } else {
-      setMessage('Your password has been reset successfully. Redirecting to login...');
-      setTimeout(() => navigate('/auth/login'), 3000);
+      setMessage('Your password has been reset successfully. You can now log in with your new password.');
+      setTimeout(() => navigate('/auth'), 5000); // Redirect to login
     }
   };
 
-  if (error && error !== 'Invalid or missing reset token.') {
-    return <div className="text-red-500 text-center mt-8">{error}</div>;
+  // Show a waiting message until the recovery session is loaded
+  if (!session && !message && !error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <p className="text-lg">Loading secure session...</p>
+          <p className="text-sm text-gray-500">Please wait while we verify your password reset link.</p>
+        </div>
+      </div>
+    );
   }
-
-  if (message) {
-    return <div className="text-green-500 text-center mt-8">{message}</div>;
-  }
-
-  if (!token || type !== 'recovery') {
-    return <div className="text-red-500 text-center mt-8">Invalid or missing reset token. Redirecting...</div>;
-  }
-
+  
+  // Render the form once the session is available
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Reset Your Password</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {message && <p className="text-green-500 text-center mb-4">{message}</p>}
-        <form onSubmit={handleResetPassword}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              New Password
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="password"
-              type="password"
-              placeholder="Enter your new password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirm-password">
-              Confirm New Password
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              id="confirm-password"
-              type="password"
-              placeholder="Confirm your new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
-            >
-              Reset Password
-            </button>
-          </div>
-        </form>
+        
+        {!message && (
+          <form onSubmit={handleResetPassword}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+                New Password
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="password"
+                type="password"
+                placeholder="Enter your new password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirm-password">
+                Confirm New Password
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                id="confirm-password"
+                type="password"
+                placeholder="Confirm your new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
