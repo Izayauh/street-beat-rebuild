@@ -1,29 +1,35 @@
 import React, { useState } from 'react';
-import { supabase } from '../integrations/supabase/client';
-import { toast } from '../components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://street-beat-rebuild.vercel.app/auth/reset-password'
-    });
-    setLoading(false);
 
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: 'Check your email for the password reset link.', variant: 'default' });
+    try {
+      // Instead of calling Supabase's resetPasswordForEmail, 
+      // we'll redirect to our custom reset password page
+      navigate('/auth/reset-password', { 
+        state: { email: email } 
+      });
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-3xl font-bold mb-8 text-center">Forgot Password</h2>
+        <p className="text-gray-600 mb-6 text-center">
+          Enter your email address and we'll send you a 6-digit code to reset your password.
+        </p>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
@@ -50,7 +56,15 @@ const ForgotPassword = () => {
               type="submit"
               disabled={loading}
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? 'Redirecting...' : 'Continue'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/auth')}
+              className="text-blue-600 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none"
+              disabled={loading}
+            >
+              Back to Login
             </button>
           </div>
         </form>

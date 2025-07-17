@@ -1,8 +1,11 @@
-{
-    "imports": {
-      "react": "npm:react@18.3.1",
-      "@react-email/components": "npm:@react-email/components@0.0.22",
-      "@react-email/render": "npm:@react-email/render@0.0.16",
-      "resend": "npm:resend@3.4.0"
-    }
-  }
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
+  // more env variables...
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
