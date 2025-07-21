@@ -99,6 +99,8 @@ const Payments = () => {
     return PAYMENT_PACKAGES.find(pkg => pkg.id === selectedPackage);
   };
 
+  const selectedPackageDetails = getSelectedPackageDetails();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
@@ -194,7 +196,7 @@ const Payments = () => {
       </section>
 
       {/* Payment Form Section */}
-      {selectedPackage && (
+      {selectedPackageDetails && (
         <section id="payment-section" className="py-16 px-4 section-warm relative">
           <div className="absolute inset-0 texture-grain opacity-20"></div>
           <div className="container mx-auto relative z-10">
@@ -207,16 +209,20 @@ const Payments = () => {
             
             <div className="max-w-4xl mx-auto grid lg:grid-cols-2 gap-8">
               {/* Order Summary */}
-              {getSelectedPackageDetails() && (
-                <OrderSummary 
-                  packageDetails={getSelectedPackageDetails()!} 
-                />
-              )}
+              <OrderSummary 
+                packageDetails={selectedPackageDetails} 
+                // Assuming OrderSummary needs selectedPackage
+                selectedPackage={selectedPackageDetails.id} 
+              />
               
               {/* Payment Form */}
               <div className="card-analog p-8 rounded-2xl warm-glow">
                 <SquarePaymentForm 
-                  amount={getSelectedPackageDetails()!.price * 100}
+                  amount={selectedPackageDetails.price * 100}
+                  packageName={selectedPackageDetails.name} // Pass package name
+                  email={user?.email || ''} // Pass user email if available
+                  billingInfo={{ /* Provide billing info here, possibly from a form */ }} // Placeholder
+                  // You might need to collect billing information from the user
                 />
               </div>
             </div>

@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../integrations/supabase/client'; // Import the shared client
-import { User, SupabaseClient } from '@supabase/supabase-js';
+import { User, SupabaseClient, AuthResponse, Session } from '@supabase/supabase-js';
 
 // Define the shape of the context
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   supabase: SupabaseClient;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, options?: { data?: object; emailRedirectTo?: string; }) => Promise<AuthResponse>;
+  signOut: () => Promise<void>;
 }
 
 // Create the context with a default value
@@ -16,18 +19,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // No longer need to create a client here, we import it instead.
-  // const [supabase] = useState<SupabaseClient>(() => 
-  //   createClient(import.meta.env.VITE_SUPABASE_URL!, import.meta.env.VITE_SUPABASE_ANON_KEY!)
-  // );
+  const [supabaseClient] = useState(() => supabase);
 
   useEffect(() => {
     // Check for user on initial load
     const getUser = async () => {
       setLoading(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         setUser(user);
       } catch (error) {
         console.error('Error getting user:', error);
@@ -39,7 +38,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     getUser();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
@@ -50,12 +49,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       subscription?.unsubscribe();
     };
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, [supabaseClient]); // Dependency array includes supabaseClient
+
+  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      return { data, error };
+  };
+
+  const signUp = async (email: string, password: string, options?: { data?: object; emailRedirectTo?: string; }): Promise<AuthResponse> => {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options
+    });
+    if (error) throw error;
+    return { data, error };
+  };
+
+  const signOut = async (): Promise<void> => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) throw error;
+  };
 
   const value = {
     user,
     loading,
-    supabase
+    supabase: supabaseClient,
+    signIn,
+    signUp,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
