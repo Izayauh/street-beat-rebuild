@@ -1,40 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../integrations/supabase/client';
 
-const ResetPassword = () => {
+type ResetPasswordStep = 'email' | 'token' | 'password';
+
+const ResetPassword: React.FC = () => {
+  const [step, setStep] = useState<ResetPasswordStep>('email');
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
-  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [step, setStep] = useState<'email' | 'token' | 'password'>('email');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if email was passed from ForgotPassword page
   useEffect(() => {
     if (location.state?.email) {
       setEmail(location.state.email);
-      // Explicitly set step to 'email' when email is provided via state
-      setStep('email');
+      // Optionally set step to 'email' here if you want them to re-send the code
+      // setStep('email'); 
+      // Or if they came from forgot password, maybe they should go directly to token input
+      // setStep('token'); // Let's keep it at 'email' initially and rely on user action
     }
   }, [location.state]);
 
-  const handleSendCode = async (e: React.FormEvent) => {
+
+  const handleSendCode = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    setError('');
+    setMessage('');
 
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/password-reset-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'x-client-info': 'YourAppName'
         },
         body: JSON.stringify({
           action: 'generate',
@@ -42,30 +50,38 @@ const ResetPassword = () => {
         })
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send reset code');
+        const errorBody = await response.text();
+        console.error('Error response from backend (Send Code):', errorBody);
+        try {
+          const errorData = JSON.parse(errorBody);
+          throw new Error(errorData.error || errorData.message || 'Failed to send reset code');
+        } catch (parseError) {
+          throw new Error(errorBody || 'Failed to send reset code');
+        }
       }
 
-      setMessage('Reset code sent to your email!');
-      // Removed: setStep('token'); // This line was causing the issue
+      const result = await response.json();
 
-    } catch (error) {
-      setError(error.message || 'Failed to send reset code');
+      setMessage(result.message || 'Reset code sent to your email!');
+      setStep('token'); // Transition to token input step
+
+    } catch (err: any) {
+      console.error('Network or fetch error (Send Code):', err);
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyToken = async (e: React.FormEvent) => {
+  const handleVerifyToken = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    setError('');
+    setMessage('');
 
     if (token.length !== 6) {
-      setError('Please enter a 6-digit code');
+      setError('Please enter a valid 6-digit code.');
       setLoading(false);
       return;
     }
@@ -75,300 +91,116 @@ const ResetPassword = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'x-client-info': 'YourAppName'
         },
         body: JSON.stringify({
           action: 'verify',
           email: email,
           token: token,
-          newPassword: password
+          newPassword: newPassword
         })
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to verify code');
+        const errorBody = await response.text();
+        console.error('Error response from backend (Verify Token):', errorBody);
+        try {
+          const errorData = JSON.parse(errorBody);
+          throw new Error(errorData.error || errorData.message || 'Failed to verify code or reset password');
+        } catch (parseError) {
+          throw new Error(errorBody || 'Failed to verify code or reset password');
+        }
       }
 
-      setMessage('Password updated successfully! Redirecting to login...');
-      // Setting step to a new value like 'success' could be another approach,
-      // but for now, let's rely on the message and the rendering condition.
-      // setStep('success'); 
-      setTimeout(() => navigate('/auth'), 3000);
-    } catch (error) {
-      setError(error.message || 'Failed to verify code');
+      const result = await response.json();
+
+      setMessage(result.message || 'Password successfully reset');
+      // Redirect to login page after successful reset
+      setTimeout(() => navigate('/auth'), 3000); // Redirect after 3 seconds
+
+    } catch (err: any) {
+      console.error('Network or fetch error (Verify Token):', err);
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/password-reset-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          action: 'verify',
-          email: email,
-          token: token,
-          newPassword: password
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to update password');
-      }
-
-      setMessage('Password updated successfully! Redirecting to login...');
-      setTimeout(() => navigate('/auth'), 3000);
-    } catch (error) {
-      setError(error.message || 'Failed to update password');
-    } finally {
-      setLoading(false);
-    }
+  // handlePasswordSubmit is likely not needed if 'verify' action handles reset
+  // Keeping it as a placeholder based on previous code structure
+  const handlePasswordSubmit = async (e: FormEvent) => {
+     e.preventDefault();
+     // This function might be redundant. The password reset is likely handled in handleVerifyToken.
+     console.log('handlePasswordSubmit called - might be redundant.');
   };
-
-  const goBack = () => {
-    if (step === 'token') {
-      setStep('email');
-      setToken('');
-      setError(null);
-      setMessage(null);
-    } else if (step === 'password') {
-      setStep('token');
-      setPassword('');
-      setConfirmPassword('');
-      setError(null);
-      setMessage(null);
-    }
-  };
-
-  const resendCode = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/password-reset-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          action: 'generate',
-          email: email
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to resend code');
-      }
-
-      setMessage('New code sent to your email!');
-    } catch (error) {
-      setError(error.message || 'Failed to resend code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (message && step === 'email') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <div className="text-center">
-            <div className="text-green-500 text-6xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold mb-4">Check Your Email</h2>
-            <p className="text-gray-600 mb-6">{message}</p>
-            <button
-              onClick={() => setStep('token')}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Enter Code
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (message && (step !== 'email' && step !== 'token')) { // Modified condition
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <div className="text-center">
-            <div className="text-green-500 text-6xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold mb-4">Success!</h2>
-            <p className="text-gray-600">{message}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
         
+        {loading && <p className="text-blue-500 text-center">Loading...</p>}
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {message && <p className="text-green-500 text-center mb-4">{message}</p>}
+        {!loading && message && <p className="text-green-500 text-center mb-4">{message}</p>}
 
         {step === 'email' && (
-          <form onSubmit={handleSendCode}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email Address
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? 'Sending...' : 'Send Code'}
-              </button>
-            </div>
+          <form onSubmit={handleSendCode} className="space-y-4">
+            <Input 
+              type="email" 
+              placeholder="Enter your email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+              disabled={loading}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              Send Verification Code
+            </Button>
           </form>
         )}
 
         {step === 'token' && (
-          <form onSubmit={handleVerifyToken}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="token">
-                6-Digit Code
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center text-2xl tracking-widest"
-                id="token"
-                type="text"
-                placeholder="000000"
-                value={token}
-                onChange={(e) => setToken(e.target.value.replace(/D/g, '').slice(0, 6))}
-                maxLength={6}
-                required
-                disabled={loading}
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Enter the 6-digit code sent to {email}
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={goBack}
-                className="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none"
-                disabled={loading}
-              >
-                Back
-              </button>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-                type="submit"
-                disabled={loading || token.length !== 6}
-              >
-                {loading ? 'Verifying...' : 'Verify Code'}
-              </button>
-            </div>
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={resendCode}
-                className="text-blue-500 hover:text-blue-700 text-sm underline"
-                disabled={loading}
-              >
-                Didn't receive code? Resend
-              </button>
-            </div>
+          <form onSubmit={handleVerifyToken} className="space-y-4">
+            <Input 
+              type="text" 
+              placeholder="Enter verification code" 
+              value={token}
+              onChange={(e) => setToken(e.target.value.replace(/D/g, '').slice(0, 6))}
+              maxLength={6}
+              required 
+              disabled={loading}
+            />
+            <Input 
+              type="password" 
+              placeholder="New Password" 
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required 
+              disabled={loading}
+            />
+            <Input 
+              type="password" 
+              placeholder="Confirm New Password" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required 
+              disabled={loading}
+            />
+            <Button type="submit" className="w-full" disabled={loading || token.length !== 6 || newPassword !== confirmPassword || newPassword.length < 6}>
+              Verify Code and Reset Password
+            </Button>
           </form>
         )}
 
         {step === 'password' && (
-          <form onSubmit={handlePasswordSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                New Password
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="password"
-                type="password"
-                placeholder="Enter your new password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirm-password">
-                Confirm New Password
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="confirm-password"
-                type="password"
-                placeholder="Confirm your new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={goBack}
-                className="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none"
-                disabled={loading}
-              >
-                Back
-              </button>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
-            </div>
-          </form>
+           <div className="text-center">
+           <div className="text-green-500 text-6xl mb-4">✓</div>
+           <h2 className="text-2xl font-bold mb-4">Password Successfully Reset!</h2>
+           <p className="text-gray-600 mb-4">You will be redirected to the login page shortly.</p>
+           {/* Optional: Add a manual redirect button */}
+           {/* <Button onClick={() => navigate('/auth')}>Go to Login</Button> */}
+         </div>
         )}
       </div>
     </div>
