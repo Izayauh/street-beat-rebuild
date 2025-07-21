@@ -18,8 +18,8 @@ const ResetPassword = () => {
   useEffect(() => {
     if (location.state?.email) {
       setEmail(location.state.email);
-      // Auto-advance to token step if email is provided
-      setStep('token');
+      // Explicitly set step to 'email' when email is provided via state
+      setStep('email');
     }
   }, [location.state]);
 
@@ -49,7 +49,8 @@ const ResetPassword = () => {
       }
 
       setMessage('Reset code sent to your email!');
-      setStep('token');
+      // Removed: setStep('token'); // This line was causing the issue
+
     } catch (error) {
       setError(error.message || 'Failed to send reset code');
     } finally {
@@ -91,6 +92,9 @@ const ResetPassword = () => {
       }
 
       setMessage('Password updated successfully! Redirecting to login...');
+      // Setting step to a new value like 'success' could be another approach,
+      // but for now, let's rely on the message and the rendering condition.
+      // setStep('success'); 
       setTimeout(() => navigate('/auth'), 3000);
     } catch (error) {
       setError(error.message || 'Failed to verify code');
@@ -213,7 +217,7 @@ const ResetPassword = () => {
     );
   }
 
-  if (message && (step === 'token' || step === 'password')) {
+  if (message && (step !== 'email' && step !== 'token')) { // Modified condition
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -276,7 +280,7 @@ const ResetPassword = () => {
                 type="text"
                 placeholder="000000"
                 value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(e) => setToken(e.target.value.replace(/D/g, '').slice(0, 6))}
                 maxLength={6}
                 required
                 disabled={loading}
