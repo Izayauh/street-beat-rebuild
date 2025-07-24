@@ -1,43 +1,54 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { auth } from '@/firebaseConfig'; // Import Firebase auth
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail } from "firebase/auth"; // Import Firebase auth methods
 
 export const useCustomAuth = () => {
-  const auth = useAuth();
+  const authContext = useAuth(); // Rename to avoid conflict with firebase auth object
 
-  const signUpWithVerification = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/confirm`;
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: fullName ? { full_name: fullName } : undefined
-      }
-    });
-
-    if (!error && data.user && !data.user.email_confirmed_at) {
-      // Send custom verification email
-      try {
-        await supabase.functions.invoke('send-verification-email', {
-          body: {
-            email,
-            confirmationUrl: redirectUrl,
-            fullName
-          }
-        });
-      } catch (emailError) {
-        console.warn('Failed to send custom verification email:', emailError);
-        // The built-in Supabase email will still be sent
-      }
+  const signUpWithVerification = async (email: string, password: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Send email verification
+      await sendEmailVerification(userCredential.user);
+      return { user: userCredential.user, error: null };
+    } catch (error: any) {
+      return { user: null, error };
     }
+  };
 
-    return { data, error };
+  const signIn = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return { user: userCredential.user, error: null };
+    } catch (error: any) {
+      return { user: null, error };
+    }
+  };
+
+  const signOutUser = async () => {
+    try {
+      await signOut(auth);
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
   };
 
   return {
-    ...auth,
-    signUpWithVerification
+    ...authContext,
+    signUpWithVerification,
+    signIn,
+    signOutUser,
+    resetPassword,
   };
 };
