@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../integrations/supabase/client'; // Import the shared client
-import { User, SupabaseClient, AuthResponse, Session } from '@supabase/supabase-js';
+import { User, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth } from '../integrations/firebase/client'; // Import auth directly
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { toast } from 'sonner';
 
 // Define the shape of the context
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  supabase: SupabaseClient;
-  signIn: (email: string, password: string) => Promise<AuthResponse>;
-  signUp: (email: string, password: string, options?: { data?: object; emailRedirectTo?: string; }) => Promise<AuthResponse>;
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -19,72 +20,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [supabaseClient] = useState(() => supabase);
 
   useEffect(() => {
-    // Check for user on initial load
-    const getUser = async () => {
-      setLoading(true);
-      try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error('Error getting user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUser();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
 
     // Clean up subscription on unmount
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [supabaseClient]); // Dependency array includes supabaseClient
+    return () => unsubscribe();
+  }, []);
 
-  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      return { data, error };
+  const signIn = async (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signUp = async (email: string, password: string, options?: { data?: object; emailRedirectTo?: string; }): Promise<AuthResponse> => {
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options
-    });
-    if (error) throw error;
-    return { data, error };
+  const signUp = async (email: string, password: string, fullName?: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+      // You can store the full name in Firestore here if needed
+      await sendEmailVerification(userCredential.user);
+    }
+    return userCredential;
   };
 
   const signOut = async (): Promise<void> => {
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) throw error;
+    return firebaseSignOut(auth);
   };
 
   const value = {
     user,
     loading,
-    supabase: supabaseClient,
     signIn,
     signUp,
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 // Create a hook to use the auth context
