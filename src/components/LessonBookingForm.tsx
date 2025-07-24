@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Calendar, User, Mail, Phone, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import TimeSlotCalendar from './TimeSlotCalendar';
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 interface Instructor {
   id: string;
@@ -41,6 +42,10 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const functions = getFunctions();
+  const createBooking = httpsCallable(functions, 'createBooking');
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -109,25 +114,20 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('lesson_bookings')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || null,
-          lesson_type: formData.lessonType,
-          instructor: formData.instructor === 'no-preference' ? null : formData.instructor,
-          preferred_date: format(selectedDate, 'yyyy-MM-dd'),
-          preferred_time: selectedTime,
-          message: formData.message || null,
-          status: 'pending'
-        });
+      // Create booking in Square via Cloud Function
+      const bookingResult = await createBooking({
+        startAt: format(selectedDate, `yyyy-MM-dd'T'HH:mm:ssxxx`), // Format date and time for Square
+        serviceId: "YOUR_SERVICE_ID", // TODO: Replace with actual service ID
+        teamMemberId: instructors.find(instr => instr.name === formData.instructor)?.id || "ANY", // Assuming instructor name maps to Square team member ID
+        customerId: "CUSTOMER_ID", // TODO: Get or create customer ID
+        customerNote: formData.message,
+      });
 
-      if (error) {
-        console.error('Error submitting booking:', error);
-        toast.error('Failed to submit booking. Please try again.');
-        return;
-      }
+      console.log("Booking created in Square:", bookingResult.data);
+
+      // You might want to save the booking confirmation to your DB here
+      // using supabase.from('lesson_bookings').insert({...})
+      // For now, we'll just rely on the Square booking.
 
       // Send confirmation emails
       await sendConfirmationEmails({
@@ -156,12 +156,22 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
       setSelectedTime('');
 
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('An error occurred. Please try again.');
+      console.error('Error booking lesson:', error);
+      // Check if it's an HttpsError and display a user-friendly message
+      if ((error as any).code) {
+         toast.error(`Booking failed: ${(error as any).message}`);
+      } else {
+         toast.error('An error occurred while booking. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Find the selected instructor object to pass to TimeSlotCalendar
+  const selectedInstructorObj = instructors.find(
+    instructor => instructor.name === formData.instructor
+  );
 
   return (
     <div className="card-analog rounded-2xl p-8 warm-glow">
@@ -257,6 +267,7 @@ const LessonBookingForm = ({ selectedLessonType = '', instructors }: LessonBooki
           <TimeSlotCalendar
             selectedDate={selectedDate}
             selectedTime={selectedTime}
+            selectedInstructor={selectedInstructorObj}
             onDateSelect={setSelectedDate}
             onTimeSelect={setSelectedTime}
           />

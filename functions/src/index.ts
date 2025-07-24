@@ -10,6 +10,76 @@
 import {setGlobalOptions} from "firebase-functions";
 import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
+import * as functions from "firebase-functions";
+import { squareClient } from "./square-client";
+
+export const getInstructors = functions.https.onCall(async (data, context) => {
+  try {
+    const { result } = await squareClient.teamApi.searchTeamMembers({});
+    return result.teamMembers;
+  } catch (error) {
+    console.error("Error fetching instructors:", error);
+    throw new functions.https.HttpsError("internal", "Could not fetch instructors.");
+  }
+});
+
+export const searchAvailability = functions.https.onCall(async (data, context) => {
+  const { serviceId, teamMemberId, startAt, endAt } = data;
+  const locationId = functions.config().square.location_id;
+
+  try {
+    const { result } = await squareClient.bookingsApi.searchAvailability({
+      query: {
+        filter: {
+          locationId: locationId,
+          startAtRange: {
+            startAt,
+            endAt,
+          },
+          segmentFilters: [
+            {
+              serviceVariationId: serviceId,
+              teamMemberIdFilter: {
+                any: [teamMemberId],
+              },
+            },
+          ],
+        },
+      },
+    });
+    return result.availabilities;
+  } catch (error) {
+    console.error("Error searching availability:", error);
+    throw new functions.https.HttpsError("internal", "Could not search availability.");
+  }
+});
+
+export const createBooking = functions.https.onCall(async (data, context) => {
+  const { startAt, serviceId, teamMemberId, customerId, customerNote } = data;
+  const locationId = functions.config().square.location_id;
+
+  try {
+    const { result } = await squareClient.bookingsApi.createBooking({
+      booking: {
+        locationId: locationId,
+        startAt,
+        appointmentSegments: [
+          {
+            durationMinutes: 60, // Or get this from the service
+            serviceVariationId: serviceId,
+            teamMemberId,
+          },
+        ],
+        customerId,
+        customerNote,
+      },
+    });
+    return result.booking;
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    throw new functions.https.HttpsError("internal", "Could not create booking.");
+  }
+});
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript

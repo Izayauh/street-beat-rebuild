@@ -8,6 +8,7 @@ import InstructorCard from '@/components/InstructorCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Music, Piano, Mic, Drum, Guitar, Headphones } from 'lucide-react';
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 interface Instructor {
   id: string;
@@ -34,21 +35,15 @@ const Lessons = () => {
     fetchInstructors();
   }, []);
 
+  const functions = getFunctions();
+  const getInstructors = httpsCallable(functions, 'getInstructors');
+
   const fetchInstructors = async () => {
     try {
-      const { data, error } = await supabase
-        .from('instructors')
-        .select('*')
-        .order('name');
-
-      if (error) {
-        console.error('Error fetching instructors:', error);
-        return;
-      }
-
-      setInstructors(data || []);
+      const result = await getInstructors();
+      setInstructors(result.data as Instructor[]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error fetching instructors:", error);
     }
   };
 

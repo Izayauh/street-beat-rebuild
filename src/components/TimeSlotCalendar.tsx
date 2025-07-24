@@ -3,28 +3,49 @@ import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format, isBefore, startOfToday, addDays } from 'date-fns';
+import { format, isBefore, startOfToday, addDays, startOfDay, endOfDay } from 'date-fns';
 import { Clock, Calendar as CalendarIcon } from 'lucide-react';
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 interface TimeSlotCalendarProps {
   selectedDate: Date | undefined;
   selectedTime: string;
+  selectedInstructor: any; // TODO: Define a proper type for instructor
   onDateSelect: (date: Date | undefined) => void;
   onTimeSelect: (time: string) => void;
 }
 
-const TIME_SLOTS = [
-  '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', 
-  '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'
-];
-
-const TimeSlotCalendar = ({ selectedDate, selectedTime, onDateSelect, onTimeSelect }: TimeSlotCalendarProps) => {
+const TimeSlotCalendar = ({ selectedDate, selectedTime, selectedInstructor, onDateSelect, onTimeSelect }: TimeSlotCalendarProps) => {
   const today = startOfToday();
   const maxDate = addDays(today, 90); // Allow booking up to 3 months ahead
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+
+  const functions = getFunctions();
+  const searchAvailability = httpsCallable(functions, 'searchAvailability');
 
   const isDateDisabled = (date: Date) => {
     return isBefore(date, today) || date > maxDate;
+  };
+
+  const handleDateChange = async (date: Date | undefined) => {
+    onDateSelect(date);
+    if (date && selectedInstructor) {
+      try {
+        const result = await searchAvailability({
+          serviceId: "YOUR_SERVICE_ID", // TODO: Get the actual service ID
+          teamMemberId: selectedInstructor.id,
+          startAt: startOfDay(date).toISOString(),
+          endAt: endOfDay(date).toISOString(),
+        });
+        // Assuming result.data is an array of available time strings
+        setAvailableTimes(result.data as string[]);
+      } catch (error) {
+        console.error("Error fetching availability:", error);
+        setAvailableTimes([]);
+      }
+    } else {
+      setAvailableTimes([]);
+    }
   };
 
   return (
@@ -41,7 +62,7 @@ const TimeSlotCalendar = ({ selectedDate, selectedTime, onDateSelect, onTimeSele
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={onDateSelect}
+            onSelect={handleDateChange}
             disabled={isDateDisabled}
             className="rounded-md border border-gray-600 bg-gray-700/50 text-white [&_.rdp-day_selected]:bg-purple-600 [&_.rdp-day_selected]:text-white [&_.rdp-day]:text-white [&_.rdp-day:hover]:bg-purple-500/50"
             classNames={{
@@ -81,23 +102,27 @@ const TimeSlotCalendar = ({ selectedDate, selectedTime, onDateSelect, onTimeSele
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {TIME_SLOTS.map((time) => (
-                <Button
-                  key={time}
-                  variant={selectedTime === time ? "default" : "outline"}
-                  className={`
-                    ${selectedTime === time 
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-                      : 'border-gray-600 text-gray-300 hover:bg-purple-500/20 hover:border-purple-500'
-                    }
-                  `}
-                  onClick={() => onTimeSelect(time)}
-                >
-                  {time}
-                </Button>
-              ))}
-            </div>
+            {availableTimes.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {availableTimes.map((time) => (
+                  <Button
+                    key={time}
+                    variant={selectedTime === time ? "default" : "outline"}
+                    className={`
+                      ${selectedTime === time 
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                        : 'border-gray-600 text-gray-300 hover:bg-purple-500/20 hover:border-purple-500'
+                      }
+                    `}
+                    onClick={() => onTimeSelect(time)}
+                  >
+                    {time}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400">No available times for this date with the selected instructor.</p>
+            )}
             {selectedTime && (
               <div className="mt-4 p-3 bg-purple-600/20 border border-purple-600/50 rounded-md">
                 <p className="text-purple-200 text-sm">

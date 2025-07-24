@@ -20,14 +20,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ packageDetails }) => {
       <div className="space-y-4">
         <div className="flex justify-between items-start">
           <div>
-          <p>
+          {/* Changed wrapping <p> to <div> */}
+          <div>
               <h4 className="text-amber-300 text-lg font-display">
                 {packageDetails.name}
               </h4>
               <p className="text-amber-200/70 text-sm text-serif">
                 {packageDetails.description}
               </p>
-          </p>
+          </div>
           </div>
           <div className="text-right">
             {packageDetails.originalPrice && (
