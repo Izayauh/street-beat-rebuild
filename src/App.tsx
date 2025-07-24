@@ -37,8 +37,8 @@ const App = () => (
             <Route path="/payments" element={<Payments />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/thank-you" element={<ThankYou />} />
-            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-            {/* Changed path from /auth/reset-password to /reset-password */}
+            {/* Added route for ForgotPassword */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

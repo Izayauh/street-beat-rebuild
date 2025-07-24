@@ -19,9 +19,9 @@ const ResetPassword = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const code = params.get('oobCode');
-    
+
+    // Only try to verify if a code exists in the URL
     if (code) {
-      // This is the function that makes the network request
       verifyPasswordResetCode(auth, code)
         .then(() => {
           setOobCode(code);
@@ -29,23 +29,23 @@ const ResetPassword = () => {
         })
         .catch((err) => {
           console.error("Verification Error:", err);
-          setError('The password reset link is invalid or has expired. Please try again.');
+          setError('The password reset link is invalid or has expired.');
           toast.error('Invalid or expired link.');
           setLoading(false);
         });
     } else {
+      // If no code is in the URL, we can't proceed.
       setError('Invalid password reset link. No code found in URL.');
       setLoading(false);
     }
-  }, [location]);
+  }, [location.search]); // Dependency on location.search is key
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oobCode) return;
-
     try {
       await confirmPasswordReset(auth, oobCode, newPassword);
-      toast.success('Password has been reset successfully! You can now sign in.');
+      toast.success('Password has been reset successfully!');
       navigate('/auth');
     } catch (err: any) {
       console.error("Reset Error:", err);
@@ -53,10 +53,16 @@ const ResetPassword = () => {
     }
   };
 
+  // While checking the code, show a loading message
   if (loading) {
-    return <div>Verifying link...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Verifying link...</p>
+      </div>
+    );
   }
 
+  // If there was an error (or no code), show the error message
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -65,6 +71,7 @@ const ResetPassword = () => {
     );
   }
 
+  // Only show the form if the code was successfully verified
   return (
     <div className="flex justify-center items-center min-h-screen">
       <Card className="w-full max-w-md">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext'; // Correct path to the context
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,6 +76,13 @@ const Auth: React.FC = () => {
               {isLogin ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
+          {isLogin && ( // Only show Forgot Password link on the Sign In form
+            <div className="mt-4 text-center">
+              <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
+          )}
           <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="mt-4 w-full">
             {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
           </Button>
