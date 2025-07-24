@@ -92,7 +92,7 @@ export const AuthForm = ({ onClose }: AuthFormProps) => {;
           <div className="text-right text-sm">
             <button
               type="button"
-              onClick={() => navigate('/auth/reset-password')} // Navigate directly to reset password
+              onClick={() => navigate('/forgot-password')} // Navigate directly to reset password
               className="text-amber-300 hover:text-amber-400 transition-colors text-serif underline">
               Forgot Password?
             </button>

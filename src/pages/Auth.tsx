@@ -78,7 +78,7 @@ const Auth: React.FC = () => {
           </form>
           {isLogin && ( // Only show Forgot Password link on the Sign In form
             <div className="mt-4 text-center">
-              <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
+              <Link to="/auth/forgot-password" className="text-sm text-blue-500 hover:underline">
                 Forgot Password?
               </Link>
             </div>
